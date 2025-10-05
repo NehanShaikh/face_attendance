@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Faculty Dashboard</title>
+<style>
+  body { 
+    font-family: Arial, sans-serif; 
+    background: #f3f3f3; 
+    margin: 0; 
+  }
+  header { 
+    background: #007bff; 
+    padding: 15px; 
+    color: #fff; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+  }
+  header h1 { margin: 0; font-size: 22px; }
+  header button {
+    background: #ff4d4d; 
+    border: none; 
+    color: white; 
+    padding: 8px 14px; 
+    border-radius: 6px; 
+    cursor: pointer;
+  }
+  header button:hover { background: #cc0000; }
+
+  nav { background: #e9ecef; padding: 12px; text-align: center; }
+  nav button { 
+    padding: 10px 18px; 
+    margin: 5px; 
+    cursor: pointer; 
+    border: none; 
+    background: #007bff; 
+    color: white; 
+    border-radius: 5px; 
+    font-weight: bold;
+    transition: 0.2s;
+  }
+  nav button:hover { background: #0056b3; }
+
+  section { display: none; padding: 20px; }
+  section.active { display: block; }
+
+  .card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+
+  .table-container { overflow-x: auto; }
+  table { 
+    margin-top: 15px; 
+    border-collapse: collapse; 
+    width: 100%; 
+    background: #fff; 
+  }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  th { background: #007bff; color: #fff; }
+  tr:hover td { background: #f9f9f9; }
+
+  h2 { margin-top: 0; color: #333; }
+  .action-btn { cursor: pointer; border: none; background: none; font-size: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>👨‍🏫 Faculty Dashboard</h1>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<nav>
+  <button onclick="showSection('students')">🎓 Students</button>
+  <button onclick="showSection('assigned')">👨‍🏫 Assigned Students</button>
+  <button onclick="showSection('attendance')">🗂 Attendance</button>
+  <button onclick="showSection('timetable')">📅 Timetable</button>
+</nav>
+
+<!-- Students Section -->
+<section id="students">
+  <h2>📋 Students List</h2>
+  <button onclick="addStudent()">➕ Add Student</button>
+  <table id="studentsTable">
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Roll</th><th>Class</th><th>Email</th><th>Phone</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- Assigned Students Section -->
+<section id="assigned">
+  <h2>👨‍🏫 Assigned Students</h2>
+  <button onclick="assignStudent()">➕ Assign Student</button>
+  <table id="assignedTable">
+    <thead>
+      <tr><th>ID</th><th>Student ID</th><th>Name</th><th>Roll</th><th>Class</th><th>Email</th><th>Phone</th><th>Assigned On</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- Attendance Section -->
+<section id="attendance">
+  <h2>🗂 Attendance Records</h2>
+  <button onclick="addAttendance()">➕ Add Attendance</button>
+  <table id="attendanceTable">
+    <thead>
+      <tr><th>ID</th><th>Student ID</th><th>Name</th><th>Subject ID</th><th>Subject</th><th>Timestamp</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- Timetable Section -->
+<section id="timetable">
+  <h2>📅 Timetable Management</h2>
+  <button onclick="addTimetable()">➕ Add Timetable</button>
+  <table id="timetableTable">
+    <thead>
+      <tr><th>ID</th><th>Subject</th><th>Day</th><th>Start Time</th><th>End Time</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+
+<script>
+  function showSection(sectionId) {
+    document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
+    document.getElementById(sectionId).classList.add("active");
+  }
+
+  // Default open Students tab
+  showSection('students');
+</script>
+
+<script>
+const token = localStorage.getItem("token");
+if (!token) location.href="pipeline.html";
+
+// ---------- Logout ----------
+function logout(){
+  localStorage.removeItem("token");
+  location.href="pipeline.html";
+}
+
+// ---------- Fetch Students ----------
+async function fetchStudents(){
+  const res = await fetch("http://localhost:3000/faculty/students", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const students = await res.json();
+  const tbody = document.querySelector("#studentsTable tbody");
+  tbody.innerHTML = "";
+  students.forEach(s=>{
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${s.student_id}</td>
+      <td>${s.name}</td>
+      <td>${s.roll_number}</td>
+      <td>${s.class}</td>
+      <td>${s.email}</td>
+      <td>${s.phone}</td>
+      <td>
+        <button onclick="editStudent(${s.student_id})">✏️</button>
+        <button onclick="deleteStudent(${s.student_id})">🗑️</button>
+      </td>`;
+    tbody.appendChild(row);
+  });
+}
+
+// ---------- Fetch Assigned Students ----------
+async function fetchAssigned(){
+  const res = await fetch("http://localhost:3000/faculty/assigned-students", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const students = await res.json();
+  const tbody = document.querySelector("#assignedTable tbody");
+  tbody.innerHTML = "";
+  students.forEach(s=>{
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${s.id}</td>
+      <td>${s.student_id}</td>
+      <td>${s.name}</td>
+      <td>${s.roll_number}</td>
+      <td>${s.class}</td>
+      <td>${s.email}</td>
+      <td>${s.phone}</td>
+      <td>${new Date(s.assigned_on).toLocaleString()}</td>
+      <td>
+        <button onclick="unassignStudent(${s.student_id})">🗑️ Unassign</button>
+      </td>`;
+    tbody.appendChild(row);
+  });
+}
+
+// ---------- Assign Student ----------
+async function assignStudent(){
+  const studentId = prompt("Enter Student ID to assign");
+  if(!studentId) return;
+  const res = await fetch("http://localhost:3000/faculty/assigned-students",{
+    method:"POST",
+    headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
+    body:JSON.stringify({ student_id: studentId })
+  });
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchAssigned(); }
+  else alert(data.error||data.message);
+}
+
+// ---------- Unassign Student ----------
+async function unassignStudent(studentId){
+  if(!confirm("Unassign student?")) return;
+  const res = await fetch(`http://localhost:3000/faculty/assigned-students/${studentId}`,{
+    method:"DELETE", headers:{"Authorization":"Bearer "+token}
+  });
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchAssigned(); }
+  else alert(data.error||data.message);
+}
+
+
+// ---------- Fetch Attendance ----------
+async function fetchAttendance(){
+  const res = await fetch("http://localhost:3000/faculty/attendance", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const records = await res.json();
+  const tbody = document.querySelector("#attendanceTable tbody");
+  tbody.innerHTML = "";
+  records.forEach(r=>{
+    const time = new Date(r.timestamp).toLocaleString();
+    row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${r.attendance_id}</td>
+      <td>${r.student_id}</td>
+      <td>${r.student_name}</td>
+      <td>${r.subject_id}</td>
+      <td>${r.subject_name}</td>
+      <td>${time}</td>
+      <td>
+        <button onclick="editAttendance(${r.attendance_id},${r.student_id},${r.subject_id},'${r.subject_name}','${r.timestamp}')">✏️</button>
+        <button onclick="deleteAttendance(${r.attendance_id})">🗑️</button>
+      </td>`;
+    tbody.appendChild(row);
+  });
+}
+
+// ---------- Add Student ----------
+async function addStudent(){
+  const name = prompt("Name"), roll = prompt("Roll Number"), cls = prompt("Class"), email = prompt("Email"), phone = prompt("Phone");
+  if(!name||!roll||!cls) return alert("Name, Roll, Class required!");
+  const res = await fetch("http://localhost:3000/faculty/students",{
+    method:"POST",
+    headers:{ "Authorization": "Bearer "+token, "Content-Type":"application/json" },
+    body:JSON.stringify({name,roll_number:roll,class_name:cls,email,phone})
+  });
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchStudents(); }
+  else alert(data.error||data.message);
+}
+
+// ---------- Edit Student ----------
+async function editStudent(id){
+  const name = prompt("New Name"), roll = prompt("New Roll"), cls = prompt("New Class"), email = prompt("Email"), phone = prompt("Phone");
+  if(!name||!roll||!cls) return alert("Name, Roll, Class required!");
+  const res = await fetch(`http://localhost:3000/faculty/students/${id}`,{
+    method:"PUT",
+    headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
+    body:JSON.stringify({name,roll_number:roll,class_name:cls,email,phone})
+  });
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchStudents(); }
+  else alert(data.error);
+}
+
+// ---------- Delete Student ----------
+async function deleteStudent(id){
+  if(!confirm("Delete student?")) return;
+  const res = await fetch(`http://localhost:3000/faculty/students/${id}`,{method:"DELETE", headers:{"Authorization":"Bearer "+token}});
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchStudents(); }
+  else alert(data.error||data.message);
+}
+
+// ---------- Add Attendance ----------
+async function addAttendance(){
+  const sid = prompt("Student ID");
+  const subjectId = prompt("Subject ID");
+  const subjectName = prompt("Subject Name");
+  if(!sid || !subjectId || !subjectName) return alert("All fields required!");
+
+  const res = await fetch("http://localhost:3000/faculty/attendance",{
+    method:"POST",
+    headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
+    body:JSON.stringify({student_id:sid, subject_id:subjectId, subject_name:subjectName})
+  });
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchAttendance(); }
+  else alert(data.error||data.message);
+}
+
+// ---------- Edit Attendance ----------
+async function editAttendance(id,sid,subjectId,subjectName,timestamp){
+  const newSid = prompt("Student ID",sid);
+  const newSubjectId = prompt("Subject ID",subjectId);
+  const newSubjectName = prompt("Subject Name",subjectName);
+  const ts = prompt("Timestamp YYYY-MM-DD HH:MM:SS",timestamp);
+  if(!newSid || !newSubjectId || !newSubjectName || !ts) return alert("Required!");
+
+  const res = await fetch(`http://localhost:3000/faculty/attendance/${id}`,{
+    method:"PUT",
+    headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
+    body:JSON.stringify({student_id:newSid, subject_id:newSubjectId, subject_name:newSubjectName, timestamp:ts})
+  });
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchAttendance(); }
+  else alert(data.error||data.message);
+}
+
+// ---------- Delete Attendance ----------
+async function deleteAttendance(id){
+  if(!confirm("Delete attendance?")) return;
+  const res = await fetch(`http://localhost:3000/faculty/attendance/${id}`,{method:"DELETE", headers:{"Authorization":"Bearer "+token}});
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchAttendance(); }
+  else alert(data.error||data.message);
+}
+
+// ---------- Fetch Timetable ----------
+// ---------- Fetch Timetable ----------
+async function fetchTimetable(){
+  const res = await fetch("http://localhost:3000/faculty/timetable", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const rows = await res.json();
+  const tbody = document.querySelector("#timetableTable tbody");
+  tbody.innerHTML = "";
+  rows.forEach(r=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.timetable_id}</td>
+      <td>${r.subject_name}</td>
+      <td>${r.day}</td>
+      <td>${r.start_time}</td>
+      <td>${r.end_time}</td>
+      <td>
+        <button onclick="editTimetable(${r.timetable_id}, '${r.day}', '${r.start_time}', '${r.end_time}', ${r.subject_id})">✏️</button>
+        <button onclick="deleteTimetable(${r.timetable_id})">🗑️</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+
+// ---------- Add Timetable ----------
+async function addTimetable(){
+  const subject_id = prompt("Subject ID");
+  const day = prompt("Day (e.g. Monday)");
+  const start_time = prompt("Start Time (HH:MM:SS)");
+  const end_time = prompt("End Time (HH:MM:SS)");
+
+  if(!subject_id||!day||!start_time||!end_time) return alert("All fields required!");
+
+  const res = await fetch("http://localhost:3000/faculty/timetable",{
+    method:"POST",
+    headers:{ "Authorization":"Bearer "+token, "Content-Type":"application/json" },
+    body:JSON.stringify({subject_id, day, start_time, end_time})
+  });
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchTimetable(); }
+  else alert(data.error||data.message);
+}
+
+
+// ---------- Edit Timetable ----------
+async function editTimetable(id, day, start_time, end_time, subject_id){
+  const newDay = prompt("Day", day);
+  const newStart = prompt("Start Time", start_time);
+  const newEnd = prompt("End Time", end_time);
+  const newSubject = prompt("Subject ID", subject_id);
+  if(!newDay||!newStart||!newEnd||!newSubject) return;
+
+  const res = await fetch(`http://localhost:3000/faculty/timetable/${id}`,{
+    method:"PUT",
+    headers:{ "Authorization":"Bearer "+token, "Content-Type":"application/json" },
+    body:JSON.stringify({subject_id:newSubject, day:newDay, start_time:newStart, end_time:newEnd})
+  });
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchTimetable(); }
+  else alert(data.error||data.message);
+}
+
+// ---------- Delete Timetable ----------
+async function deleteTimetable(id){
+  if(!confirm("Delete timetable entry?")) return;
+  const res = await fetch(`http://localhost:3000/faculty/timetable/${id}`,{
+    method:"DELETE", headers:{"Authorization":"Bearer "+token}
+  });
+  const data = await res.json();
+  if(res.ok){ alert(data.message); fetchTimetable(); }
+  else alert(data.error||data.message);
+}
+
+
+// ---------- Initial Load ----------
+fetchStudents();  // already existing (all students)
+fetchAssigned();  // new function
+fetchAttendance();
+fetchTimetable(); 
+
+</script>
+</body>
+</html>

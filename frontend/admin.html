@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - Face Attendance</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f0f2f5; margin:0; }
+    header { background:#333; color:white; padding:15px; text-align:center; }
+    nav { background:#444; padding:10px; }
+    nav button { margin:5px; padding:10px 15px; border:none; border-radius:5px; cursor:pointer; color:white; background:#666; }
+    nav button:hover { background:#222; }
+    .container { padding:20px; }
+    section { display:none; background:white; padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); margin-top:20px; }
+    table { border-collapse: collapse; width:100%; margin-top:10px; }
+    th, td { border:1px solid #ddd; padding:10px; text-align:left; }
+    th { background:#eee; }
+    input, select { padding:8px; margin:5px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>⚙️ Admin Dashboard</h1>
+    <p>Welcome, <span id="adminName"></span> | <a href="#" onclick="logout()" style="color:yellow;">Logout</a></p>
+  </header>
+  
+  <nav>
+  <button onclick="showSection('users'); loadUsers()">👤 Manage Users</button>
+  <button onclick="showSection('students'); loadStudents()">🎓 Manage Students</button>
+  <button onclick="showSection('subjects'); loadSubjects()">👨‍🏫 Subjects</button>
+  <button onclick="showSection('faculty'); loadFaculty()">👨‍🏫 Manage Faculty</button>
+  <button onclick="showSection('assignments'); loadAssignments()">📘 Assign Students</button>
+  <button onclick="showSection('timetable'); loadTimetable()">📅 Manage Timetable</button>
+</nav>
+
+
+  <div class="container">
+    <!-- Manage Users -->
+    <section id="users">
+      <h2>👤 Manage Users</h2>
+      <input type="text" id="newUsername" placeholder="Username">
+      <input type="password" id="newPassword" placeholder="Password">
+      <select id="newRole">
+        <option value="student">Student</option>
+        <option value="faculty">Faculty</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button onclick="addUser()">➕ Add User</button>
+      <div id="userList"></div>
+    </section>
+
+    <!-- Manage Students -->
+<section id="students">
+  <h2>🎓 Manage Students</h2>
+  <input type="text" id="studentName" placeholder="Name">
+  <input type="text" id="studentRoll" placeholder="Roll Number">
+  <input type="text" id="studentClass" placeholder="Class">
+  <input type="email" id="studentEmail" placeholder="Email">
+  <input type="text" id="studentPhone" placeholder="Phone">
+  <button onclick="addStudent()">➕ Add Student</button>
+  <div id="studentList"></div>
+</section>
+
+<section id="subjects">
+  <h2>📘 Subject Management</h2>
+
+  <!-- Add New Subject -->
+  <h3>➕ Add Subject</h3>
+  <input type="text" id="subjectName" placeholder="Enter Subject Name">
+  <button onclick="addSubject()">Add</button>
+
+  <!-- List of Subjects -->
+  <div id="subjectList"></div>
+</section>
+
+<!-- Manage Faculty -->
+<!-- Manage Faculty -->
+<section id="faculty">
+  <h2>👨‍🏫 Manage Faculty</h2>
+  <input type="text" id="facultyName" placeholder="Name">
+  <input type="text" id="facultyDept" placeholder="Department">
+  <input type="number" id="facultyUserId" placeholder="User ID">
+  <button onclick="addFaculty()">➕ Add Faculty</button>
+
+  <div id="facultyList"></div>
+</section>
+
+
+<!-- Assign Subjects to Faculty -->
+
+
+<!-- Faculty Assignments -->
+<section id="assignments">
+  <h2>👨‍🏫 Admin Faculty Assignments</h2>
+  <input type="number" id="adminFacultyId" placeholder="Enter Faculty ID">
+  <button onclick="loadAdminAssignments()">🔍 Load</button>
+
+  <h3>➕ Assign Student</h3>
+  <select id="adminStudentSelect"></select>
+  <button onclick="assignStudentToFaculty()">Assign</button>
+
+  <div id="assignmentsList"></div>
+</section>
+
+
+
+<!-- Faculty Timetable -->
+<section id="timetable">
+  <h2>📅 Faculty Timetable Management</h2>
+
+  <input type="number" id="facultyId" placeholder="Enter Faculty ID">
+  <button onclick="loadTimetable()">🔍 Load Timetable</button>
+
+  <h3>➕ Add Timetable</h3>
+  <select id="subjectId"></select>
+  <input type="text" id="day" placeholder="Day (e.g., Monday)">
+  <input type="time" id="startTime">
+  <input type="time" id="endTime">
+  <button onclick="addTimetable()">Add</button>
+
+  <div id="timetableList"></div>
+</section>
+
+
+
+  <script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const username = localStorage.getItem("username");
+
+    if (!token || role !== "admin") {
+      alert("❌ Unauthorized access. Login as admin.");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("adminName").innerText = username;
+    }
+
+    function showSection(id) {
+      document.querySelectorAll("section").forEach(sec => sec.style.display = "none");
+      document.getElementById(id).style.display = "block";
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "pipeline.html";
+    }
+
+    // ================= USERS =================
+    async function addUser() {
+      const username = document.getElementById("newUsername").value;
+      const password = document.getElementById("newPassword").value;
+      const role = document.getElementById("newRole").value;
+
+      const res = await fetch("http://localhost:3000/admin/addUser", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ username, password, role })
+      });
+
+      const data = await res.json();
+      alert(data.message || data.error);
+      loadUsers();
+    }
+
+    async function loadUsers() {
+      const res = await fetch("http://localhost:3000/admin/users", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const users = await res.json();
+      let html = "<table><tr><th>ID</th><th>Username</th><th>Role</th><th>Action</th></tr>";
+      users.forEach(u => {
+        html += `<tr>
+          <td>${u.user_id}</td>
+          <td>${u.username}</td>
+          <td>${u.role}</td>
+          <td><button onclick="deleteUser(${u.user_id})">🗑 Delete</button></td>
+        </tr>`;
+      });
+      html += "</table>";
+      document.getElementById("userList").innerHTML = html;
+    }
+
+    async function deleteUser(id) {
+      if (!confirm("Delete this user?")) return;
+      const res = await fetch(`http://localhost:3000/admin/users/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const data = await res.json();
+      alert(data.message || data.error);
+      loadUsers();
+    }
+
+    
+  // ---------------- STUDENTS ----------------
+  async function loadStudents() {
+    const res = await fetch("http://localhost:3000/admin/students", {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const students = await res.json();
+    let html = "<table><tr><th>ID</th><th>Name</th><th>Roll</th><th>Class</th><th>Email</th><th>Phone</th><th>Action</th></tr>";
+    students.forEach(s => {
+      html += `<tr>
+        <td>${s.student_id}</td>
+        <td>${s.name}</td>
+        <td>${s.roll_number}</td>
+        <td>${s.class}</td>
+        <td>${s.email}</td>
+        <td>${s.phone}</td>
+        <td><button onclick="deleteStudent(${s.student_id})">🗑 Delete</button></td>
+      </tr>`;
+    });
+    html += "</table>";
+    document.getElementById("studentList").innerHTML = html;
+
+    // fill assignStudent dropdown
+    const assignSel = document.getElementById("assignStudent");
+    assignSel.innerHTML = "";
+    students.forEach(s => {
+      assignSel.innerHTML += `<option value="${s.student_id}">${s.name}</option>`;
+    });
+  }
+
+  async function addStudent() {
+  const name = document.getElementById("studentName").value.trim();
+  const roll = document.getElementById("studentRoll").value.trim();
+  const studentClass = document.getElementById("studentClass").value.trim();
+  const email = document.getElementById("studentEmail").value.trim();
+  const phone = document.getElementById("studentPhone").value.trim();
+
+  if (!name || !roll || !studentClass || !email || !phone) {
+    alert("⚠️ Please fill in all fields before adding a student.");
+    return;
+  }
+
+  const res = await fetch("http://localhost:3000/admin/students", {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json", 
+      "Authorization": "Bearer " + token 
+    },
+    body: JSON.stringify({
+      name, 
+      roll_number: roll, 
+      class: studentClass, 
+      email, 
+      phone
+    })
+  });
+
+  const data = await res.json();
+  console.log("Add Student Response:", data);
+
+  if (res.ok) {
+    alert("✅ Student added successfully!");
+    document.getElementById("studentName").value = "";
+    document.getElementById("studentRoll").value = "";
+    document.getElementById("studentClass").value = "";
+    document.getElementById("studentEmail").value = "";
+    document.getElementById("studentPhone").value = "";
+    loadStudents();
+  } else {
+    alert("❌ Error: " + (data.error || "Failed to add student"));
+  }
+}
+
+  async function deleteStudent(id) {
+    await fetch(`http://localhost:3000/admin/students/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": "Bearer " + token }
+    });
+    loadStudents();
+  }
+
+  // ---------------- FACULTY ----------------
+  async function loadFaculty() {
+  const res = await fetch("http://localhost:3000/admin/faculty", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const faculty = await res.json();
+
+  const subjRes = await fetch("http://localhost:3000/admin/subjects", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const subjects = await subjRes.json();
+
+  let html = "<table border='1'><tr><th>Faculty ID</th><th>User ID</th><th>Name</th><th>Department</th><th>Subjects</th><th>Assign Subject</th><th>Action</th></tr>";
+
+  faculty.forEach(f => {
+    const facultySubjects = subjects.filter(s => s.faculty_id === f.faculty_id);
+
+    html += `<tr>
+      <td>${f.faculty_id}</td>
+      <td>${f.user_id || "-"}</td>
+      <td>${f.name}</td>
+      <td>${f.department}</td>
+      <td>
+        ${facultySubjects.map(s => `
+          ${s.name} <button onclick="unassignSubject(${s.subject_id})">❌</button>
+        `).join("<br>") || "-"}
+      </td>
+      <td>
+        <select id="assignSub-${f.faculty_id}">
+          ${subjects.map(s => `<option value="${s.subject_id}">${s.name}</option>`).join("")}
+        </select>
+        <button onclick="assignSubject(${f.faculty_id})">Assign</button>
+      </td>
+      <td>
+        <button onclick="deleteFaculty(${f.faculty_id})">🗑 Delete</button>
+      </td>
+    </tr>`;
+  });
+
+  html += "</table>";
+  document.getElementById("facultyList").innerHTML = html;
+}
+
+// Assign subject to faculty
+async function assignSubject(facultyId) {
+  const subjectId = document.getElementById(`assignSub-${facultyId}`).value;
+
+  await fetch(`http://localhost:3000/admin/subjects/${subjectId}/assign`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ faculty_id: facultyId })
+  });
+
+  loadFaculty();
+}
+
+// Unassign subject from faculty
+async function unassignSubject(subjectId) {
+  if (!confirm("Unassign this subject from faculty?")) return;
+
+  const res = await fetch(`http://localhost:3000/admin/subjects/${subjectId}/unassign`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    }
+  });
+
+  const data = await res.json();
+  console.log("Unassign response:", data);
+
+  loadFaculty();
+}
+
+// Delete faculty (auto unassigns subjects in backend)
+async function deleteFaculty(id) {
+  if (!confirm("Delete this faculty? This will also unassign their subjects.")) return;
+
+  await fetch(`http://localhost:3000/admin/faculty/${id}`, {
+    method: "DELETE",
+    headers: { "Authorization": "Bearer " + token }
+  });
+
+  loadFaculty();
+}
+
+async function addFaculty() {
+  const name = document.getElementById("facultyName").value.trim();
+  const department = document.getElementById("facultyDept").value.trim();
+  const user_id = document.getElementById("facultyUserId").value.trim();
+
+  if (!name || !department || !user_id) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  const res = await fetch("http://localhost:3000/admin/faculty", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ user_id, name, department })
+  });
+
+  const data = await res.json();
+  console.log("Add Faculty Response:", data);
+
+  if (res.ok) {
+    alert("Faculty added successfully!");
+    document.getElementById("facultyName").value = "";
+    document.getElementById("facultyDept").value = "";
+    document.getElementById("facultyUserId").value = "";
+    loadFaculty(); // refresh table
+  } else {
+    alert("Error: " + (data.error || "Failed to add faculty"));
+  }
+}
+
+// Load both faculties and subjects
+// Load faculties + subjects + assignments
+async function loadSubjectsTable() {
+  const res = await fetch("http://localhost:3000/admin/subjects", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const subjects = await res.json();
+
+  let html = `<table border="1">
+    <thead>
+      <tr>
+        <th>Subject ID</th>
+        <th>Name</th>
+        <th>Faculty ID</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  subjects.forEach(s => {
+    html += `<tr>
+      <td>${s.subject_id}</td>
+      <td>${s.name}</td>
+      <td>${s.faculty_id || "-"}</td>
+      <td>
+        <button onclick="editSubject(${s.subject_id}, '${s.name}')">✏️ Edit</button>
+        <button onclick="deleteSubject(${s.subject_id})">🗑️ Delete</button>
+      </td>
+    </tr>`;
+  });
+
+  html += "</tbody></table>";
+  document.getElementById("subjectList").innerHTML = html;
+}
+
+// Add new subject
+async function addSubject() {
+  const name = document.getElementById("subjectName").value.trim();
+  if (!name) {
+    alert("⚠️ Please enter subject name");
+    return;
+  }
+
+  await fetch("http://localhost:3000/admin/subjects", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ name })
+  });
+
+  document.getElementById("subjectName").value = "";
+  loadSubjectsTable();
+}
+
+// Edit subject
+async function editSubject(subjectId, oldName) {
+  const newName = prompt("Enter new subject name:", oldName);
+  if (!newName || newName.trim() === oldName) return;
+
+  await fetch(`http://localhost:3000/admin/subjects/${subjectId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ name: newName })
+  });
+
+  loadSubjectsTable();
+}
+
+// Delete subject
+async function deleteSubject(subjectId) {
+  if (!confirm("Are you sure you want to delete this subject?")) return;
+
+  await fetch(`http://localhost:3000/admin/subjects/${subjectId}`, {
+    method: "DELETE",
+    headers: { "Authorization": "Bearer " + token }
+  });
+
+  loadSubjectsTable();
+}
+
+// Initial load
+loadSubjectsTable();
+
+
+// ---------------- TIMETABLE ----------------
+// Load timetable for a faculty
+// ---------------- LOAD SUBJECTS ----------------
+async function loadSubjects(facultyId) {
+  const res = await fetch(`http://localhost:3000/admin/subjects/faculty/${facultyId}`, {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const subjects = await res.json();
+
+  const select = document.getElementById("subjectId");
+  select.innerHTML = '<option value="">-- Select Subject --</option>';
+  subjects.forEach(sub => {
+    const opt = document.createElement("option");
+    opt.value = sub.subject_id;
+    opt.textContent = sub.name;
+    select.appendChild(opt);
+  });
+}
+
+//Assignments faculty
+async function loadAdminAssignments() {
+  const facultyId = document.getElementById("adminFacultyId").value;
+  if (!facultyId) return alert("Enter Faculty ID");
+
+  const res = await fetch(`http://localhost:3000/admin/faculty/${facultyId}/assigned-students`, {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const students = await res.json();
+
+  let html = "<table><tr><th>Name</th><th>Roll</th><th>Class</th><th>Email</th><th>Actions</th></tr>";
+  students.forEach(s => {
+    html += `
+      <tr>
+        <td>${s.name}</td>
+        <td>${s.roll_number}</td>
+        <td>${s.class}</td>
+        <td>${s.email}</td>
+        <td>
+          <button onclick="unassignStudentFromFaculty(${facultyId}, ${s.student_id})">❌ Unassign</button>
+        </td>
+      </tr>`;
+  });
+  html += "</table>";
+  document.getElementById("assignmentsList").innerHTML = html;
+
+  // Populate student dropdown
+  const res2 = await fetch("http://localhost:3000/admin/students", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const allStudents = await res2.json();
+  let options = "<option value=''>--Select Student--</option>";
+  allStudents.forEach(s => {
+    options += `<option value="${s.student_id}">${s.name} (${s.roll_number})</option>`;
+  });
+  document.getElementById("adminStudentSelect").innerHTML = options;
+}
+
+async function assignStudentToFaculty() {
+  const facultyId = document.getElementById("adminFacultyId").value;
+  const student_id = document.getElementById("adminStudentSelect").value;
+  if (!facultyId || !student_id) return alert("Select faculty and student");
+
+  const res = await fetch(`http://localhost:3000/admin/faculty/${facultyId}/assigned-students`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+    body: JSON.stringify({ student_id })
+  });
+  const data = await res.json();
+  alert(data.message || data.error);
+  loadAdminAssignments();
+}
+
+async function unassignStudentFromFaculty(facultyId, studentId) {
+  if (!confirm("Unassign student?")) return;
+  const res = await fetch(`http://localhost:3000/admin/faculty/${facultyId}/assigned-students/${studentId}`, {
+    method: "DELETE",
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  alert(data.message || data.error);
+  loadAdminAssignments();
+}
+
+
+
+// ---------------- LOAD TIMETABLE ----------------
+async function loadTimetable() {
+  const facultyId = document.getElementById("facultyId").value;
+  if (!facultyId) return alert("Enter Faculty ID");
+
+  // load timetable
+  const res = await fetch(`http://localhost:3000/admin/timetable/faculty/${facultyId}`, {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  const container = document.getElementById("timetableList");
+
+  if (!data.length) {
+    container.innerHTML = "<p>No timetable found for this faculty.</p>";
+  } else {
+    let html = `<table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Day</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    data.forEach(row => {
+      html += `<tr>
+        <td>${row.subject}</td>
+        <td>${row.day}</td>
+        <td>${row.start_time}</td>
+        <td>${row.end_time}</td>
+        <td>
+          <button onclick="editRow(${row.timetable_id}, '${row.day}', '${row.start_time}', '${row.end_time}', ${row.subject_id})">✏️ Edit</button>
+          <button onclick="deleteRow(${row.timetable_id})">🗑️ Delete</button>
+        </td>
+      </tr>`;
+    });
+
+    html += "</tbody></table>";
+    container.innerHTML = html;
+  }
+
+  // load subject dropdown for this faculty
+  loadSubjects(facultyId);
+}
+
+
+// ---------------- ADD TIMETABLE ----------------
+async function addTimetable() {
+  const faculty_id = document.getElementById("facultyId").value;
+  const subject_id = document.getElementById("subjectId").value;
+  const day = document.getElementById("day").value;
+  const start_time = document.getElementById("startTime").value;
+  const end_time = document.getElementById("endTime").value;
+
+  if (!faculty_id || !subject_id || !day || !start_time || !end_time) {
+    return alert("⚠️ Fill all fields");
+  }
+
+  const res = await fetch("http://localhost:3000/admin/timetable", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ faculty_id, subject_id, day, start_time, end_time })
+  });
+
+  const data = await res.json();
+  console.log("Add timetable response:", data);
+
+  // reset form fields
+  document.getElementById("day").value = "";
+  document.getElementById("startTime").value = "";
+  document.getElementById("endTime").value = "";
+  document.getElementById("subjectId").selectedIndex = 0;
+
+  loadTimetable(); // refresh list
+}
+
+
+// ---------------- EDIT TIMETABLE ----------------
+function editRow(id, day, start, end, subject_id) {
+  const newDay = prompt("Enter new day:", day);
+  const newStart = prompt("Enter new start time:", start);
+  const newEnd = prompt("Enter new end time:", end);
+
+  if (!newDay || !newStart || !newEnd) return;
+
+  fetch(`http://localhost:3000/admin/timetable/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+    body: JSON.stringify({ subject_id, day: newDay, start_time: newStart, end_time: newEnd })
+  }).then(() => loadTimetable());
+}
+
+// ---------------- DELETE TIMETABLE ----------------
+async function deleteRow(id) {
+  if (!confirm("Are you sure you want to delete this timetable entry?")) return;
+
+  const res = await fetch(`http://localhost:3000/admin/timetable/${id}`, {
+    method: "DELETE",
+    headers: { "Authorization": "Bearer " + token }
+  });
+
+  const data = await res.json();
+  console.log("Delete response:", data);
+
+  loadTimetable();
+}
+
+
+
+function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "pipeline.html";
+}
+  </script>
+</body>
+</html>

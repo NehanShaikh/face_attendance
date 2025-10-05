@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Face Processing Panel</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 30px;
+      background-color: #f9f9f9;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #output {
+      margin-top: 30px;
+      white-space: pre-wrap;
+      background: #eee;
+      padding: 20px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📁 Face Recognition Operations</h1>
+
+  <button onclick="runScript('2_crop_faces.py')">✂️ Crop Faces</button>
+  <button onclick="runScript('3_generate_embeddings.py')">🧠 Generate Embeddings</button>
+  <button onclick="runScript('insert_embedding.py')">📥 Insert Embeddings into DB</button>
+  <button onclick="runScript('4_face_recognition.py')">📷 Start Face Recognition</button>
+
+  <div id="output">Output will appear here...</div>
+
+  <script>
+    function runScript(scriptName) {
+      document.getElementById('output').innerText = `▶️ Running ${scriptName}...`;
+
+      fetch(`http://localhost:3000/run/${scriptName}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('output').innerText = data.output || "✅ Done.";
+        })
+        .catch(err => {
+          document.getElementById('output').innerText = "❌ Error: " + err;
+        });
+    }
+  </script>
+
+</body>
+</html>

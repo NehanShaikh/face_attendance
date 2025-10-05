@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+  <style>
+    body {
+      background: #f4f7fb;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    h2 {
+      font-weight: 600;
+      color: #2c3e50;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    /* Navigation Buttons */
+    .nav-buttons {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .nav-buttons button {
+      padding: 10px 20px;
+      margin: 6px;
+      cursor: pointer;
+      border: none;
+      background: #4e73df;
+      color: white;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 15px;
+      transition: 0.2s ease;
+    }
+    .nav-buttons button:hover {
+      background: #2e59d9;
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    .nav-buttons button:active {
+      transform: scale(0.97);
+    }
+
+    /* Logout button */
+    .logout-btn {
+      background: #e74a3b !important;
+    }
+    .logout-btn:hover {
+      background: #c0392b !important;
+    }
+
+    /* Card design */
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    /* Table design */
+    table {
+      border-radius: 10px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .table th {
+      text-align: center;
+      background: #4e73df;
+      color: #fff;
+      font-weight: 500;
+    }
+    .table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+    tr:hover td {
+      background: #eef3ff;
+    }
+
+    /* Log box */
+    #log { 
+      margin-top: 20px; 
+      white-space: pre-wrap; 
+      text-align: left; 
+      max-width: 800px; 
+      margin: auto; 
+      background: #fff; 
+      padding: 20px; 
+      border-radius: 10px; 
+      box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <div class="container mt-4">
+    <h2 class="text-center mb-4">🎓 Student Dashboard</h2>
+    <div class="d-flex justify-content-end mb-3">
+      <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Register Student -->
+    <div class="mb-4">
+      <button id="openFormBtn" class="btn btn-primary">➕ Register Student</button>
+      <div id="studentFormContainer" style="display:none; margin-top:20px;">
+        <div class="card shadow p-3">
+          <h4>Student Registration</h4>
+          <form id="studentForm">
+              <input type="text" id="sname" placeholder="Name" class="form-control mb-2" required>
+              <input type="text" id="sroll" placeholder="Roll Number" class="form-control mb-2" required>
+              <input type="text" id="sclass" placeholder="Class" class="form-control mb-2" required>
+              <input type="email" id="semail" placeholder="Email" class="form-control mb-2" required>
+              <input type="text" id="sphone" placeholder="Phone" class="form-control mb-2" required>
+              <button type="submit" class="btn btn-success">Confirm</button>
+              <button type="button" id="closeFormBtn" class="btn btn-secondary">Cancel</button>
+          </form>
+          <div id="studentMsg" class="mt-2"></div>
+        </div>
+      </div>
+    </div>
+
+    
+    <!-- Attendance Table -->
+    <!-- Navigation Buttons -->
+<div class="d-flex justify-content-center mb-4">
+  <button class="btn btn-primary mx-2" onclick="showSection('attendance')">✅ My Attendance</button>
+  <button class="btn btn-info mx-2" onclick="showSection('timetable')">📅 My Timetable</button>
+</div>
+
+<!-- Attendance Table -->
+<div id="attendance" class="section card shadow p-3 mb-4" style="display:none;">
+  <h4 class="mb-3">✅ My Attendance</h4>
+  <table class="table table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>Attendance ID</th>
+        <th>Student ID</th>
+        <th>Name</th>
+        <th>Subject</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody id="attendanceTable"></tbody>
+  </table>
+</div>
+
+<!-- Timetable Table -->
+<div id="timetable" class="section card shadow p-3 mb-4" style="display:none;">
+  <h4 class="mb-3">📅 My Timetable</h4>
+  <table class="table table-striped">
+    <thead class="table-primary">
+      <tr><th>Day</th><th>Subject</th><th>Start</th><th>End</th></tr>
+    </thead>
+    <tbody id="timetableTable"></tbody>
+  </table>
+</div>
+
+<script>
+function showSection(sectionId) {
+  // Hide all sections
+  document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+  // Show selected section
+  document.getElementById(sectionId).style.display = "block";
+
+  // Call fetch functions if needed
+  if (sectionId === "attendance") fetchMyAttendance();
+  if (sectionId === "timetable") fetchTimetable();
+}
+</script>
+
+    <!-- Face Recognition -->
+    <div class="text-center mb-4">
+      <button class="btn btn-success" onclick="runFaceRecognition()">✅ Run Face Recognition</button>
+    </div>
+
+    <!-- Logs -->
+    <div id="log"></div>
+  </div>
+
+<script>
+const token = localStorage.getItem("token");
+
+// ======================
+// 🎯 Open/Close Student Form
+// ======================
+document.getElementById("openFormBtn").addEventListener("click", () => {
+    document.getElementById("studentFormContainer").style.display = "block";
+});
+document.getElementById("closeFormBtn").addEventListener("click", () => {
+    document.getElementById("studentFormContainer").style.display = "none";
+});
+
+// ======================
+// 📌 Student Registration
+// ======================
+document.getElementById("studentForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("sname").value.trim();
+    const roll = document.getElementById("sroll").value.trim();
+    const sclass = document.getElementById("sclass").value.trim();
+    const email = document.getElementById("semail").value.trim();
+    const phone = document.getElementById("sphone").value.trim();
+
+    try {
+        const res = await fetch("http://localhost:3000/students", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify({ name, roll_number: roll, class_name: sclass, email, phone })
+        });
+        const data = await res.json();
+        document.getElementById("studentMsg").innerText = res.ok ? data.message : "❌ Error: " + (data.error || data.message);
+        if (res.ok) runPipeline(name);
+    } catch (err) {
+        document.getElementById("studentMsg").innerText = "❌ Request failed: " + err;
+    }
+});
+
+// ======================
+// 📌 Run Pipeline
+// ======================
+async function runPipeline(name) {
+    const log = document.getElementById("log");
+    log.innerText = "⏳ Running pipeline for " + name + "...";
+    try {
+        const res = await fetch(`http://localhost:3000/pipeline/${encodeURIComponent(name)}`, { headers: { "Authorization": "Bearer " + token }});
+        const data = await res.json();
+        log.innerText = res.ok ? `✅ Pipeline finished!\n\n${data.log}` : `❌ Error: ${data.error}\nDetails: ${data.details}`;
+    } catch (err) { log.innerText = "❌ Request failed: " + err; }
+}
+
+// ======================
+// 📌 Face Recognition
+// ======================
+async function runFaceRecognition() {
+    const log = document.getElementById("log");
+    log.innerText = "⏳ Running face recognition...";
+    try {
+        const res = await fetch("http://localhost:3000/face-recognition", { headers: { "Authorization": "Bearer " + token }});
+        const data = await res.json();
+        log.innerText = res.ok ? `✅ Face recognition done:\n${data.output}` : `❌ Error: ${data.error}`;
+    } catch (err) { log.innerText = "❌ Request failed: " + err; }
+}
+
+// ======================
+// 📌 Fetch Attendance
+// ======================
+// ======================
+// 📌 Fetch Attendance
+// ======================
+async function fetchMyAttendance() {
+    try {
+        const res = await fetch("http://localhost:3000/student/attendance", { 
+            headers: { "Authorization": "Bearer " + token }
+        });
+        const records = await res.json();
+        let rows = "";
+        records.forEach(r => {
+            rows += `
+              <tr>
+                <td>${r.attendance_id}</td>
+                <td>${r.student_id}</td>
+                <td>${r.student_name}</td>
+                <td>${r.subject_name || "N/A"}</td>
+                <td>${new Date(r.timestamp).toLocaleString()}</td>
+              </tr>
+            `;
+        });
+        document.getElementById("attendanceTable").innerHTML = rows;
+    } catch (err) {
+        console.error("❌ Error fetching attendance:", err);
+    }
+}
+fetchMyAttendance();
+
+
+// ======================
+// 📌 Fetch Timetable
+// ======================
+async function fetchTimetable() {
+    try {
+        const res = await fetch("http://localhost:3000/student/timetable", { headers: { "Authorization": "Bearer " + token }});
+        const data = await res.json();
+        let rows = "";
+        data.forEach(t => rows += `<tr><td>${t.day}</td><td>${t.subject}</td><td>${t.start_time}</td><td>${t.end_time}</td></tr>`);
+        document.getElementById("timetableTable").innerHTML = rows;
+    } catch (err) { console.error("❌ Error fetching timetable:", err); }
+}
+fetchTimetable();
+
+// ======================
+// 📌 Logout
+// ======================
+function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "pipeline.html";
+}
+</script>
+</body>
+</html>

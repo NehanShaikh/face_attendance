@@ -1,0 +1,89 @@
+-- USERS TABLE
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    role ENUM('student','faculty','admin') NOT NULL,
+    student_id INT NULL,
+    faculty_id INT NULL,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id) ON DELETE CASCADE
+);
+
+-- STUDENTS TABLE
+CREATE TABLE students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    roll_number VARCHAR(20) NOT NULL UNIQUE,
+    class VARCHAR(20),
+    email VARCHAR(100),
+    phone VARCHAR(15),
+    registered_on DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- FACULTY TABLE
+CREATE TABLE faculty (
+    faculty_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    department VARCHAR(50)
+);
+
+-- SUBJECTS TABLE
+CREATE TABLE subjects (
+    subject_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    faculty_id INT,
+    FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id) ON DELETE SET NULL
+);
+
+-- TIMETABLE TABLE
+CREATE TABLE timetable (
+    timetable_id INT AUTO_INCREMENT PRIMARY KEY,
+    subject_id INT NOT NULL,
+    day VARCHAR(20) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    faculty_id INT,
+    FOREIGN KEY (subject_id) REFERENCES subjects(subject_id) ON DELETE CASCADE,
+    FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id) ON DELETE SET NULL
+);
+
+-- STUDENT_TIMETABLE TABLE (many-to-many between students & timetable)
+CREATE TABLE student_timetable (
+    student_timetable_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    timetable_id INT NOT NULL,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (timetable_id) REFERENCES timetable(timetable_id) ON DELETE CASCADE
+);
+
+-- ATTENDANCE TABLE
+CREATE TABLE attendance (
+    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    subject_id INT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    subject_name VARCHAR(100),
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (subject_id) REFERENCES subjects(subject_id) ON DELETE CASCADE
+);
+
+-- FACE EMBEDDINGS TABLE
+CREATE TABLE face_embeddings (
+    embedding_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT,
+    name VARCHAR(100),
+    embedding TEXT NOT NULL,
+    created_on DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
+
+-- FACULTY-STUDENTS TABLE (many-to-many between faculty & students)
+CREATE TABLE faculty_students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    faculty_id INT NOT NULL,
+    student_id INT NOT NULL,
+    assigned_on DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (faculty_id) REFERENCES faculty(faculty_id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
