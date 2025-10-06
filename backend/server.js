@@ -22,20 +22,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "../frontend")));
-// Update your CORS middleware - around line 25
 app.use(cors({
   origin: [
     'http://localhost:3000',           // Local dev
     'http://127.0.0.1:3000',           // Local dev  
     'http://localhost:5500',           // Live Server
     'https://face-attendance-9vis.onrender.com', // Your backend
-    'https://your-app-name.netlify.app' // Your future Netlify domain - UPDATE THIS!
+    'https://faceattendancedb.netlify.app' // Your Netlify domain - FIXED ✅
   ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "../frontend")));
 // Or temporarily allow all origins for testing:
 app.use(cors());
 // Sequelize connection test
