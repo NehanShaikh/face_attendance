@@ -209,7 +209,7 @@ document.getElementById("studentForm").addEventListener("submit", async (e) => {
     const phone = document.getElementById("sphone").value.trim();
 
     try {
-        const res = await fetch("http://localhost:3000/students", {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/students", {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
             body: JSON.stringify({ name, roll_number: roll, class_name: sclass, email, phone })
@@ -229,7 +229,7 @@ async function runPipeline(name) {
     const log = document.getElementById("log");
     log.innerText = "⏳ Running pipeline for " + name + "...";
     try {
-        const res = await fetch(`http://localhost:3000/pipeline/${encodeURIComponent(name)}`, { headers: { "Authorization": "Bearer " + token }});
+        const res = await fetch(`https://face-attendance-9vis.onrender.com/pipeline/${encodeURIComponent(name)}`, { headers: { "Authorization": "Bearer " + token }});
         const data = await res.json();
         log.innerText = res.ok ? `✅ Pipeline finished!\n\n${data.log}` : `❌ Error: ${data.error}\nDetails: ${data.details}`;
     } catch (err) { log.innerText = "❌ Request failed: " + err; }
@@ -242,7 +242,7 @@ async function runFaceRecognition() {
     const log = document.getElementById("log");
     log.innerText = "⏳ Running face recognition...";
     try {
-        const res = await fetch("http://localhost:3000/face-recognition", { headers: { "Authorization": "Bearer " + token }});
+        const res = await fetch("https://face-attendance-9vis.onrender.com/face-recognition", { headers: { "Authorization": "Bearer " + token }});
         const data = await res.json();
         log.innerText = res.ok ? `✅ Face recognition done:\n${data.output}` : `❌ Error: ${data.error}`;
     } catch (err) { log.innerText = "❌ Request failed: " + err; }
@@ -256,7 +256,7 @@ async function runFaceRecognition() {
 // ======================
 async function fetchMyAttendance() {
     try {
-        const res = await fetch("http://localhost:3000/student/attendance", { 
+        const res = await fetch("https://face-attendance-9vis.onrender.com/student/attendance", { 
             headers: { "Authorization": "Bearer " + token }
         });
         const records = await res.json();
@@ -285,7 +285,7 @@ fetchMyAttendance();
 // ======================
 async function fetchTimetable() {
     try {
-        const res = await fetch("http://localhost:3000/student/timetable", { headers: { "Authorization": "Bearer " + token }});
+        const res = await fetch("https://face-attendance-9vis.onrender.com/student/timetable", { headers: { "Authorization": "Bearer " + token }});
         const data = await res.json();
         let rows = "";
         data.forEach(t => rows += `<tr><td>${t.day}</td><td>${t.subject}</td><td>${t.start_time}</td><td>${t.end_time}</td></tr>`);

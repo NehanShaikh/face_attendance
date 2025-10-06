@@ -16,7 +16,7 @@ const token = localStorage.getItem("token"); // JWT from login
 
 // Fetch students table
 async function fetchStudents() {
-    const res = await fetch("http://localhost:3000/faculty/students", {
+    const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/students", {
         headers: { "Authorization": "Bearer " + token }
     });
     const students = await res.json();
@@ -41,7 +41,7 @@ async function fetchStudents() {
 
 // Fetch attendance table
 async function fetchAttendance() {
-    const res = await fetch("http://localhost:3000/faculty/attendance", {
+    const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/attendance", {
         headers: { "Authorization": "Bearer " + token }
     });
     const records = await res.json();
@@ -66,7 +66,7 @@ async function fetchAttendance() {
 async function deleteStudent(id) {
     if (!confirm("Are you sure you want to delete this student?")) return;
 
-    await fetch(`http://localhost:3000/faculty/students/${id}`, {
+    await fetch(`https://face-attendance-9vis.onrender.com/faculty/students/${id}`, {
         method: "DELETE",
         headers: { "Authorization": "Bearer " + token }
     });
@@ -77,7 +77,7 @@ async function deleteStudent(id) {
 async function deleteAttendance(id) {
     if (!confirm("Are you sure you want to delete this attendance record?")) return;
 
-    await fetch(`http://localhost:3000/faculty/attendance/${id}`, {
+    await fetch(`https://face-attendance-9vis.onrender.com/faculty/attendance/${id}`, {
         method: "DELETE",
         headers: { "Authorization": "Bearer " + token }
     });
@@ -94,7 +94,7 @@ async function addStudent() {
 
     if (!name || !roll) return alert("Name and Roll are required!");
 
-    await fetch("http://localhost:3000/faculty/students", {
+    await fetch("https://face-attendance-9vis.onrender.com/faculty/students", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -111,7 +111,7 @@ async function runFaceAttendance() {
     log.innerText = "⏳ Running face recognition + timetable check...\n";
 
     try {
-        const res = await fetch("http://localhost:3000/face-attendance", {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/face-attendance", {
             headers: { "Authorization": "Bearer " + token }
         });
         const data = await res.json();

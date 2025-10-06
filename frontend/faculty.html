@@ -153,7 +153,7 @@ function logout(){
 
 // ---------- Fetch Students ----------
 async function fetchStudents(){
-  const res = await fetch("http://localhost:3000/faculty/students", {
+  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/students", {
     headers: { "Authorization": "Bearer " + token }
   });
   const students = await res.json();
@@ -178,7 +178,7 @@ async function fetchStudents(){
 
 // ---------- Fetch Assigned Students ----------
 async function fetchAssigned(){
-  const res = await fetch("http://localhost:3000/faculty/assigned-students", {
+  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/assigned-students", {
     headers: { "Authorization": "Bearer " + token }
   });
   const students = await res.json();
@@ -206,7 +206,7 @@ async function fetchAssigned(){
 async function assignStudent(){
   const studentId = prompt("Enter Student ID to assign");
   if(!studentId) return;
-  const res = await fetch("http://localhost:3000/faculty/assigned-students",{
+  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/assigned-students",{
     method:"POST",
     headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
     body:JSON.stringify({ student_id: studentId })
@@ -219,7 +219,7 @@ async function assignStudent(){
 // ---------- Unassign Student ----------
 async function unassignStudent(studentId){
   if(!confirm("Unassign student?")) return;
-  const res = await fetch(`http://localhost:3000/faculty/assigned-students/${studentId}`,{
+  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/assigned-students/${studentId}`,{
     method:"DELETE", headers:{"Authorization":"Bearer "+token}
   });
   const data = await res.json();
@@ -230,7 +230,7 @@ async function unassignStudent(studentId){
 
 // ---------- Fetch Attendance ----------
 async function fetchAttendance(){
-  const res = await fetch("http://localhost:3000/faculty/attendance", {
+  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/attendance", {
     headers: { "Authorization": "Bearer " + token }
   });
   const records = await res.json();
@@ -258,7 +258,7 @@ async function fetchAttendance(){
 async function addStudent(){
   const name = prompt("Name"), roll = prompt("Roll Number"), cls = prompt("Class"), email = prompt("Email"), phone = prompt("Phone");
   if(!name||!roll||!cls) return alert("Name, Roll, Class required!");
-  const res = await fetch("http://localhost:3000/faculty/students",{
+  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/students",{
     method:"POST",
     headers:{ "Authorization": "Bearer "+token, "Content-Type":"application/json" },
     body:JSON.stringify({name,roll_number:roll,class_name:cls,email,phone})
@@ -272,7 +272,7 @@ async function addStudent(){
 async function editStudent(id){
   const name = prompt("New Name"), roll = prompt("New Roll"), cls = prompt("New Class"), email = prompt("Email"), phone = prompt("Phone");
   if(!name||!roll||!cls) return alert("Name, Roll, Class required!");
-  const res = await fetch(`http://localhost:3000/faculty/students/${id}`,{
+  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/students/${id}`,{
     method:"PUT",
     headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
     body:JSON.stringify({name,roll_number:roll,class_name:cls,email,phone})
@@ -285,7 +285,7 @@ async function editStudent(id){
 // ---------- Delete Student ----------
 async function deleteStudent(id){
   if(!confirm("Delete student?")) return;
-  const res = await fetch(`http://localhost:3000/faculty/students/${id}`,{method:"DELETE", headers:{"Authorization":"Bearer "+token}});
+  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/students/${id}`,{method:"DELETE", headers:{"Authorization":"Bearer "+token}});
   const data = await res.json();
   if(res.ok){ alert(data.message); fetchStudents(); }
   else alert(data.error||data.message);
@@ -298,7 +298,7 @@ async function addAttendance(){
   const subjectName = prompt("Subject Name");
   if(!sid || !subjectId || !subjectName) return alert("All fields required!");
 
-  const res = await fetch("http://localhost:3000/faculty/attendance",{
+  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/attendance",{
     method:"POST",
     headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
     body:JSON.stringify({student_id:sid, subject_id:subjectId, subject_name:subjectName})
@@ -316,7 +316,7 @@ async function editAttendance(id,sid,subjectId,subjectName,timestamp){
   const ts = prompt("Timestamp YYYY-MM-DD HH:MM:SS",timestamp);
   if(!newSid || !newSubjectId || !newSubjectName || !ts) return alert("Required!");
 
-  const res = await fetch(`http://localhost:3000/faculty/attendance/${id}`,{
+  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/attendance/${id}`,{
     method:"PUT",
     headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
     body:JSON.stringify({student_id:newSid, subject_id:newSubjectId, subject_name:newSubjectName, timestamp:ts})
@@ -329,7 +329,7 @@ async function editAttendance(id,sid,subjectId,subjectName,timestamp){
 // ---------- Delete Attendance ----------
 async function deleteAttendance(id){
   if(!confirm("Delete attendance?")) return;
-  const res = await fetch(`http://localhost:3000/faculty/attendance/${id}`,{method:"DELETE", headers:{"Authorization":"Bearer "+token}});
+  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/attendance/${id}`,{method:"DELETE", headers:{"Authorization":"Bearer "+token}});
   const data = await res.json();
   if(res.ok){ alert(data.message); fetchAttendance(); }
   else alert(data.error||data.message);
@@ -338,7 +338,7 @@ async function deleteAttendance(id){
 // ---------- Fetch Timetable ----------
 // ---------- Fetch Timetable ----------
 async function fetchTimetable(){
-  const res = await fetch("http://localhost:3000/faculty/timetable", {
+  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/timetable", {
     headers: { "Authorization": "Bearer " + token }
   });
   const rows = await res.json();
@@ -370,7 +370,7 @@ async function addTimetable(){
 
   if(!subject_id||!day||!start_time||!end_time) return alert("All fields required!");
 
-  const res = await fetch("http://localhost:3000/faculty/timetable",{
+  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/timetable",{
     method:"POST",
     headers:{ "Authorization":"Bearer "+token, "Content-Type":"application/json" },
     body:JSON.stringify({subject_id, day, start_time, end_time})
@@ -389,7 +389,7 @@ async function editTimetable(id, day, start_time, end_time, subject_id){
   const newSubject = prompt("Subject ID", subject_id);
   if(!newDay||!newStart||!newEnd||!newSubject) return;
 
-  const res = await fetch(`http://localhost:3000/faculty/timetable/${id}`,{
+  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/timetable/${id}`,{
     method:"PUT",
     headers:{ "Authorization":"Bearer "+token, "Content-Type":"application/json" },
     body:JSON.stringify({subject_id:newSubject, day:newDay, start_time:newStart, end_time:newEnd})
@@ -402,7 +402,7 @@ async function editTimetable(id, day, start_time, end_time, subject_id){
 // ---------- Delete Timetable ----------
 async function deleteTimetable(id){
   if(!confirm("Delete timetable entry?")) return;
-  const res = await fetch(`http://localhost:3000/faculty/timetable/${id}`,{
+  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/timetable/${id}`,{
     method:"DELETE", headers:{"Authorization":"Bearer "+token}
   });
   const data = await res.json();
