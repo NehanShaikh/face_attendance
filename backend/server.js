@@ -186,6 +186,26 @@ app.post("/login", async (req, res) => {
 });
 
 
+// Add this route - around line 40 after your middleware
+app.get("/health", async (req, res) => {
+  try {
+    // Test database connection
+    await db.query('SELECT 1');
+    res.json({ 
+      status: 'OK', 
+      database: 'Connected',
+      environment: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'Error', 
+      database: 'Disconnected',
+      error: error.message 
+    });
+  }
+});
+
 // ================== Attendance Routes ==================
 
 // Student marks their attendance (with subject check)
