@@ -22,10 +22,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware
-app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "../frontend")));
+// Update your CORS middleware - around line 25
+app.use(cors({
+  origin: [
+    'http://localhost:3000',           // Local dev
+    'http://127.0.0.1:3000',           // Local dev  
+    'http://localhost:5500',           // Live Server
+    'https://face-attendance-9vis.onrender.com', // Your backend
+    'https://your-app-name.netlify.app' // Your future Netlify domain - UPDATE THIS!
+  ],
+  credentials: true
+}));
 
+// Or temporarily allow all origins for testing:
+app.use(cors());
 // Sequelize connection test
 (async () => {
   try {
@@ -1369,6 +1381,8 @@ app.get("/face-recognition", (req, res) => {
 app.use((req, res) => res.status(404).json({ error: "Route not found" }));
 
 // ---------------- START SERVER ----------------
-app.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${port}`);
+  console.log(`🔗 Local: http://localhost:${port}`);
+  console.log(`🌐 Production: https://face-attendance-9vis.onrender.com`);
 });

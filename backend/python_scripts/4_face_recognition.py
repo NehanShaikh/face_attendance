@@ -19,7 +19,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 USE_COSINE = False          # True to use cosine similarity
 THRESHOLD = 1.0             # Euclidean: ~0.9–1.2 | Cosine: ~0.5–0.7
 FRAMES_REQUIRED = 10        # Number of frames before marking attendance
-ATTENDANCE_API = "http://localhost:3000/attendance"
+ATTENDANCE_API = "https://face-attendance-9vis.onrender.com/attendance"
 TIMEZONE = 'Asia/Kolkata'   # Ensure correct timezone
 
 # --------------------------
