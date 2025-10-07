@@ -48,9 +48,11 @@
       font-weight: bold;
       cursor: pointer;
       margin: 10px 5px;
+      transition: all 0.3s ease;
     }
     .download-btn:hover {
       background: #218838;
+      transform: translateY(-2px);
     }
     .step {
       margin: 8px 0;
@@ -58,6 +60,38 @@
       background: white;
       border-radius: 5px;
       border-left: 3px solid #28a745;
+    }
+    
+    /* Face Tools Section Styles */
+    .download-section {
+      background: #e7f3ff;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border-left: 4px solid #007bff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .download-section h3 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+    
+    .download-section p {
+      color: #555;
+      margin-bottom: 15px;
+    }
+    
+    .instructions {
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 8px;
+    }
+    
+    .instructions h4 {
+      color: #2c3e50;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -111,9 +145,10 @@
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="d-flex justify-content-center mb-4">
-      <button class="btn btn-primary mx-2" onclick="showSection('attendance')">✅ My Attendance</button>
-      <button class="btn btn-info mx-2" onclick="showSection('timetable')">📅 My Timetable</button>
+    <div class="d-flex justify-content-center mb-4 flex-wrap">
+      <button class="btn btn-primary mx-2 mb-2" onclick="showSection('attendance')">✅ My Attendance</button>
+      <button class="btn btn-info mx-2 mb-2" onclick="showSection('timetable')">📅 My Timetable</button>
+      <button class="btn btn-warning mx-2 mb-2" onclick="showSection('faceTools')">🎭 Face Tools</button>
     </div>
 
     <!-- Attendance Table -->
@@ -144,37 +179,44 @@
       </table>
     </div>
 
+    <!-- Face Recognition Tools Section -->
+    <div id="faceTools" class="section card shadow p-3 mb-4">
+      <h4 class="mb-3">🎭 Face Recognition Tools</h4>
+      
+      <div class="download-section">
+        <h3>👤 Student Registration Tool</h3>
+        <p>Use this tool to register new students' faces in the system</p>
+        <button class="download-btn" onclick="downloadRegistrationTool()">
+          📥 Download Registration Tool
+        </button>
+        <div class="instructions">
+          <h4>📋 How to use:</h4>
+          <div class="step">1. Download and run the tool</div>
+          <div class="step">2. Enter student name when prompted</div>
+          <div class="step">3. Follow on-screen instructions to capture face images</div>
+          <div class="step">4. Facial data will be saved to the online system</div>
+          <div class="step">5. Student is now ready for face recognition attendance</div>
+        </div>
+      </div>
 
-    <section id="faceTools">
-  <h2>🎭 Face Recognition Tools</h2>
-  
-  <div class="download-section">
-    <h3>👤 Student Registration Tool</h3>
-    <p>Use this tool to register new students' faces in the system</p>
-    <button class="download-btn" onclick="downloadRegistrationTool()">
-      📥 Download Registration Tool
-    </button>
-    <div class="instructions">
-      <h4>📋 How to use:</h4>
-      <div class="step">1. Download and run the tool</div>
-      <div class="step">2. Enter student name when prompted</div>
-      <div class="step">3. Follow on-screen instructions to capture face images</div>
-      <div class="step">4. Facial data will be saved to the online system</div>
-      <div class="step">5. Student is now ready for face recognition attendance</div>
+      <div class="download-section">
+        <h3>❓ Support & Documentation</h3>
+        <button class="download-btn" onclick="downloadUserManual()" style="background: #6c757d;">
+          📖 Download User Manual
+        </button>
+        <button class="download-btn" onclick="contactSupport()" style="background: #dc3545;">
+          📞 Contact Support
+        </button>
+        
+        <div class="instructions mt-3">
+          <h4>🔧 System Requirements:</h4>
+          <div class="step">• <strong>Windows 10/11</strong> operating system</div>
+          <div class="step">• <strong>Webcam</strong> for face capture</div>
+          <div class="step">• <strong>Internet connection</strong> for database sync</div>
+          <div class="step">• <strong>4GB+ RAM</strong> recommended</div>
+        </div>
+      </div>
     </div>
-  </div>
-
-
-  <div class="download-section">
-    <h3>❓ Support & Documentation</h3>
-    <button class="download-btn" onclick="downloadUserManual()" style="background: #6c757d;">
-      📖 Download User Manual
-    </button>
-    <button class="download-btn" onclick="contactSupport()" style="background: #dc3545;">
-      📞 Contact Support
-    </button>
-  </div>
-</section>
   </div>
 
   <script>
@@ -191,16 +233,14 @@
       window.open('https://drive.google.com/file/d/1vLkHHtt3JhSdbpNPTv4_cWm6f4jskPSD/view?usp=sharing', '_blank');
       alert('Face Registration Tool downloaded! Run it and enter your name to complete registration.');
     }
-    
 
-  function downloadUserManual() {
-    window.open('mailto:adscem2025@gmail.com?subject=Request User Manual - Face Recognition System&body=Hello,%0D%0A%0D%0APlease send me the User Manual for the Face Recognition Attendance System.%0D%0A%0D%0AThank you.', '_blank');
-}
+    function downloadUserManual() {
+      window.open('mailto:adscem2025@gmail.com?subject=Request User Manual - Face Recognition System&body=Hello,%0D%0A%0D%0APlease send me the User Manual for the Face Recognition Attendance System.%0D%0A%0D%0AThank you.', '_blank');
+    }
 
-function contactSupport() {
-    window.location.href = 'mailto:adscem2025@gmail.com?subject=Faculty Support - Face Recognition Attendance System&body=Hello Support Team,%0D%0A%0D%0AI need assistance with the Face Recognition Attendance System.%0D%0A%0D%0AIssue Description:%0D%0A%0D%0AThank you.';
-}
-
+    function contactSupport() {
+      window.location.href = 'mailto:adscem2025@gmail.com?subject=Faculty Support - Face Recognition Attendance System&body=Hello Support Team,%0D%0A%0D%0AI need assistance with the Face Recognition Attendance System.%0D%0A%0D%0AIssue Description:%0D%0A%0D%0AThank you.';
+    }
   
     // ======================
     // 🎯 Open/Close Student Form

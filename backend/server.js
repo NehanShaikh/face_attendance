@@ -396,49 +396,84 @@ app.get('/faculty/students', authenticateToken, async (req, res) => {
 
 // Add student
 app.post("/faculty/students", authenticateToken, async (req, res) => {
-  if (req.user.role !== "faculty") return res.status(403).json({ error: "Forbidden" });
+  // Only faculty can access this route
+  if (req.user.role !== "faculty") {
+    return res.status(403).json({ error: "Access denied. Faculty only." });
+  }
 
-  const { name, roll_number, class_name, email, phone } = req.body;
+  const { name, roll_number, class_name, email, phone, username, password } = req.body;
 
   try {
+    // Step 1️⃣: Insert student details into the students table
     const insertResult = await db.query(
-      "INSERT INTO students (name, roll, class, email, phone) VALUES ($1, $2, $3, $4, $5) RETURNING student_id",
+      `INSERT INTO students (name, roll_number, class, email, phone, registered_on)
+       VALUES ($1, $2, $3, $4, $5, NOW())
+       RETURNING student_id`,
       [name, roll_number, class_name, email, phone]
     );
 
     const newStudentId = insertResult.rows[0].student_id;
 
-    // Send welcome email
+    // Step 2️⃣: Check if username already exists in users table
+    const existingUser = await db.query(
+      `SELECT * FROM users WHERE username = $1`,
+      [username]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: "Username already exists." });
+    }
+
+    // Step 3️⃣: Hash the password before storing
+    const bcrypt = require("bcrypt");
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Step 4️⃣: Insert into users table and link to student_id
+    const userInsert = await db.query(
+      `INSERT INTO users (username, password, role, student_id)
+       VALUES ($1, $2, 'student', $3)
+       RETURNING user_id`,
+      [username, hashedPassword, newStudentId]
+    );
+
+    const newUserId = userInsert.rows[0].user_id;
+
+    // Step 5️⃣: Send a welcome email to the new student
     try {
       await sendMail(
         email,
-        "🎓 Student Registration - Smart Attendance System",
-        `Hello ${name},\n\nYou have been successfully registered by your faculty.\n\nDetails:\n- Roll Number: ${roll_number}\n- Class: ${class_name}\n- Student ID: ${newStudentId}\n\nYou can now use your account to mark attendance.\n\nBest Regards,\nFaculty Team`,
+        "🎓 Student Account Created by Faculty - Smart Attendance System",
+        `Hello ${name},\n\nYou have been successfully registered by your faculty in the Smart Attendance System.\n\nLogin Details:\nUsername: ${username}\nRole: Student\n\nClass: ${class_name}\nRoll Number: ${roll_number}\n\nYou can now log in and view your attendance.\n\nBest Regards,\nFaculty Team`,
         `<h2>Welcome, ${name}! 🎓</h2>
          <p>Your faculty has registered you in the <b>Smart Attendance System</b>.</p>
          <p>
-           <b>Roll Number:</b> ${roll_number}<br>
+           <b>Username:</b> ${username}<br>
            <b>Class:</b> ${class_name}<br>
+           <b>Roll Number:</b> ${roll_number}<br>
            <b>Student ID:</b> ${newStudentId}
          </p>
-         <p>You can now use your account to mark attendance.</p>
+         <p>You can now log in to view and mark your attendance.</p>
          <br>
          <p>Best Regards,<br><b>Faculty Team</b></p>`
       );
-
       console.log(`📧 Registration email sent to ${email}`);
     } catch (mailErr) {
       console.error("❌ Failed to send registration email:", mailErr.message);
     }
 
+    // Step 6️⃣: Send JSON response
     res.json({
-      message: "Student added & email sent",
+      success: true,
+      message: "✅ Student registered and linked successfully!",
       student_id: newStudentId,
+      user_id: newUserId,
     });
   } catch (err) {
+    console.error("❌ Error in /faculty/students:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Update student
 app.put('/faculty/students/:id', authenticateToken, async (req, res) => {
@@ -976,35 +1011,81 @@ app.get("/admin/students", authenticateToken, async (req, res) => {
   }
 });
 
+// ✅ Admin or Faculty adds a student and links it to 'users' table
 app.post("/admin/students", authenticateToken, async (req, res) => {
-  const { name, roll_number, class: studentClass, email, phone } = req.body;
+  const { name, roll_number, class_name, email, phone, username, password } = req.body;
+
+  // Only admin or faculty can access
+  if (req.user.role !== "admin" && req.user.role !== "faculty") {
+    return res.status(403).json({ error: "Access denied" });
+  }
 
   try {
-    const result = await db.query(
-      "INSERT INTO students (name, roll_number, class, email, phone) VALUES ($1,$2,$3,$4,$5) RETURNING student_id",
-      [name, roll_number, studentClass, email, phone]
+    // Step 1️⃣: Insert into students table
+    const studentResult = await db.query(
+      `INSERT INTO students (name, roll_number, class, email, phone, registered_on)
+       VALUES ($1, $2, $3, $4, $5, NOW())
+       RETURNING student_id`,
+      [name, roll_number, class_name, email, phone]
     );
-    const newStudentId = result.rows[0].student_id;
 
-    // ✅ Send welcome email
+    const newStudentId = studentResult.rows[0].student_id;
+
+    // Step 2️⃣: Check if username already exists
+    const existingUser = await db.query(
+      `SELECT * FROM users WHERE username = $1`,
+      [username]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: "Username already exists" });
+    }
+
+    // Step 3️⃣: Hash password (optional but recommended)
+    const bcrypt = require("bcrypt");
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Step 4️⃣: Insert into users table and link new student_id
+    const userResult = await db.query(
+      `INSERT INTO users (username, password, role, student_id)
+       VALUES ($1, $2, 'student', $3)
+       RETURNING user_id`,
+      [username, hashedPassword, newStudentId]
+    );
+
+    const newUserId = userResult.rows[0].user_id;
+
+    // Step 5️⃣: Send confirmation email
     try {
       await sendMail(
         email,
-        "🎉 Registration Successful - Smart Attendance System",
-        `Hello ${name},\n\nYou have been successfully registered.\nStudent ID: ${newStudentId}`,
-        `<h2>Welcome, ${name}! 🎉</h2>
-         <p>Your Student ID: ${newStudentId}</p>`
+        "🎓 Student Account Created - Smart Attendance System",
+        `Hello ${name},\n\nYour account has been created successfully!\n\nLogin Details:\nUsername: ${username}\nRole: Student\n\nYou can now log in and view your attendance.\n\nBest Regards,\nAdmin Team`,
+        `<h2>Welcome, ${name}! 🎓</h2>
+         <p>Your account for the <b>Smart Attendance System</b> has been created.</p>
+         <p><b>Username:</b> ${username}<br><b>Role:</b> Student</p>
+         <p>You can now log in and view your attendance.</p>
+         <br><p>Best Regards,<br><b>Admin Team</b></p>`
       );
-      console.log(`📧 Registration email sent to ${email}`);
+      console.log(`📧 Email sent to ${email}`);
     } catch (mailErr) {
-      console.error("❌ Failed to send registration email:", mailErr.message);
+      console.error("❌ Failed to send email:", mailErr.message);
     }
 
-    res.json({ message: "Student added & email sent", student_id: newStudentId });
+    // Step 6️⃣: Final Response
+    res.json({
+      success: true,
+      message: "✅ Student registered and linked successfully!",
+      student_id: newStudentId,
+      user_id: newUserId,
+    });
+
   } catch (err) {
+    console.error("❌ Error in /admin/students:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 app.delete("/admin/students/:id", authenticateToken, async (req, res) => {
   try {
