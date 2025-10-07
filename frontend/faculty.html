@@ -66,6 +66,40 @@
 
   h2 { margin-top: 0; color: #333; }
   .action-btn { cursor: pointer; border: none; background: none; font-size: 16px; }
+
+  /* Download Section Styles */
+  .download-section {
+    background: #e7f3ff;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 15px 0;
+    border-left: 4px solid #007bff;
+  }
+  .download-btn {
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 5px;
+    transition: 0.3s;
+  }
+  .download-btn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+  }
+  .step {
+    margin: 8px 0;
+    padding: 8px;
+    background: white;
+    border-radius: 5px;
+    border-left: 3px solid #28a745;
+  }
+  .instructions {
+    margin-top: 15px;
+  }
 </style>
 </head>
 <body>
@@ -80,10 +114,11 @@
   <button onclick="showSection('assigned')">👨‍🏫 Assigned Students</button>
   <button onclick="showSection('attendance')">🗂 Attendance</button>
   <button onclick="showSection('timetable')">📅 Timetable</button>
+  <button onclick="showSection('faceTools')">🎭 Face Recognition</button>
 </nav>
 
 <!-- Students Section -->
-<section id="students">
+<section id="students" class="active">
   <h2>📋 Students List</h2>
   <button onclick="addStudent()">➕ Add Student</button>
   <table id="studentsTable">
@@ -130,292 +165,528 @@
   </table>
 </section>
 
+<!-- Face Recognition Tools Section -->
+<section id="faceTools">
+  <h2>🎭 Face Recognition Tools</h2>
+  
+  <div class="download-section">
+    <h3>👤 Student Registration Tool</h3>
+    <p>Use this tool to register new students' faces in the system</p>
+    <button class="download-btn" onclick="downloadRegistrationTool()">
+      📥 Download Registration Tool
+    </button>
+    <div class="instructions">
+      <h4>📋 How to use:</h4>
+      <div class="step">1. Download and run the tool</div>
+      <div class="step">2. Enter student name when prompted</div>
+      <div class="step">3. Follow on-screen instructions to capture face images</div>
+      <div class="step">4. Facial data will be saved to the online system</div>
+      <div class="step">5. Student is now ready for face recognition attendance</div>
+    </div>
+  </div>
+
+  <div class="download-section">
+    <h3>📝 Classroom Attendance Tool</h3>
+    <p>Use this tool for daily classroom attendance via face recognition</p>
+    <button class="download-btn" onclick="downloadAttendanceTool()">
+      📥 Download Attendance Tool
+    </button>
+    <div class="instructions">
+      <h4>📋 How to use:</h4>
+      <div class="step">1. Download and run the tool</div>
+      <div class="step">2. It will open your camera automatically</div>
+      <div class="step">3. Position camera to capture students' faces</div>
+      <div class="step">4. Students look at camera to mark attendance</div>
+      <div class="step">5. Attendance syncs with online portal in real-time</div>
+    </div>
+  </div>
+
+  <div class="download-section">
+    <h3>❓ Support & Documentation</h3>
+    <button class="download-btn" onclick="downloadUserManual()" style="background: #6c757d;">
+      📖 Download User Manual
+    </button>
+    <button class="download-btn" onclick="contactSupport()" style="background: #dc3545;">
+      📞 Contact Support
+    </button>
+  </div>
+</section>
 
 <script>
-  function showSection(sectionId) {
+// ======================
+// 🎭 Navigation & UI Functions
+// ======================
+function showSection(sectionId) {
     document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
     document.getElementById(sectionId).classList.add("active");
+}
+
+// ======================
+// 🎭 Face Recognition Download Functions
+// ======================
+function downloadRegistrationTool() {
+    // Replace with your actual download link
+    window.open('https://drive.google.com/file/d/1vLkHHtt3JhSdbpNPTv4_cWm6f4jskPSD/view?usp=sharing', '_blank');
+    alert('Registration tool downloaded! Run the executable to register students\' faces.');
   }
 
-  // Default open Students tab
-  showSection('students');
-</script>
+  function downloadAttendanceTool() {
+    // Replace with your actual download link
+    window.open('https://drive.google.com/file/d/175CLtqlS1qlOTx9zOR4zTXGEHni8TfP1/view?usp=sharing', '_blank');
+    alert('Attendance tool downloaded! Run the executable to start classroom attendance.');
+  }
 
-<script>
+function downloadUserManual() {
+    window.open('mailto:adscem2025@gmail.com?subject=Request User Manual - Face Recognition System&body=Hello,%0D%0A%0D%0APlease send me the User Manual for the Face Recognition Attendance System.%0D%0A%0D%0AThank you.', '_blank');
+}
+
+function contactSupport() {
+    window.location.href = 'mailto:adscem2025@gmail.com?subject=Faculty Support - Face Recognition Attendance System&body=Hello Support Team,%0D%0A%0D%0AI need assistance with the Face Recognition Attendance System.%0D%0A%0D%0AIssue Description:%0D%0A%0D%0AThank you.';
+}
+
+// ======================
+// 🔐 Authentication & Initialization
+// ======================
 const token = localStorage.getItem("token");
-if (!token) location.href="pipeline.html";
+if (!token) {
+    alert("Please login first");
+    location.href = "faculty.html";
+}
 
 // ---------- Logout ----------
 function logout(){
-  localStorage.removeItem("token");
-  location.href="pipeline.html";
+    localStorage.removeItem("token");
+    location.href = "pipeline.html";
 }
 
 // ---------- Fetch Students ----------
 async function fetchStudents(){
-  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/students", {
-    headers: { "Authorization": "Bearer " + token }
-  });
-  const students = await res.json();
-  const tbody = document.querySelector("#studentsTable tbody");
-  tbody.innerHTML = "";
-  students.forEach(s=>{
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${s.student_id}</td>
-      <td>${s.name}</td>
-      <td>${s.roll_number}</td>
-      <td>${s.class}</td>
-      <td>${s.email}</td>
-      <td>${s.phone}</td>
-      <td>
-        <button onclick="editStudent(${s.student_id})">✏️</button>
-        <button onclick="deleteStudent(${s.student_id})">🗑️</button>
-      </td>`;
-    tbody.appendChild(row);
-  });
+    try {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/students", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) throw new Error('Failed to fetch students');
+        
+        const students = await res.json();
+        const tbody = document.querySelector("#studentsTable tbody");
+        tbody.innerHTML = "";
+        
+        students.forEach(s => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${s.student_id}</td>
+                <td>${s.name}</td>
+                <td>${s.roll_number}</td>
+                <td>${s.class}</td>
+                <td>${s.email || 'N/A'}</td>
+                <td>${s.phone || 'N/A'}</td>
+                <td>
+                    <button onclick="editStudent(${s.student_id})">✏️</button>
+                    <button onclick="deleteStudent(${s.student_id})">🗑️</button>
+                </td>`;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error fetching students:', error);
+        alert('Failed to load students');
+    }
 }
 
 // ---------- Fetch Assigned Students ----------
 async function fetchAssigned(){
-  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/assigned-students", {
-    headers: { "Authorization": "Bearer " + token }
-  });
-  const students = await res.json();
-  const tbody = document.querySelector("#assignedTable tbody");
-  tbody.innerHTML = "";
-  students.forEach(s=>{
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${s.id}</td>
-      <td>${s.student_id}</td>
-      <td>${s.name}</td>
-      <td>${s.roll_number}</td>
-      <td>${s.class}</td>
-      <td>${s.email}</td>
-      <td>${s.phone}</td>
-      <td>${new Date(s.assigned_on).toLocaleString()}</td>
-      <td>
-        <button onclick="unassignStudent(${s.student_id})">🗑️ Unassign</button>
-      </td>`;
-    tbody.appendChild(row);
-  });
+    try {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/assigned-students", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) throw new Error('Failed to fetch assigned students');
+        
+        const students = await res.json();
+        const tbody = document.querySelector("#assignedTable tbody");
+        tbody.innerHTML = "";
+        
+        students.forEach(s => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${s.id}</td>
+                <td>${s.student_id}</td>
+                <td>${s.name}</td>
+                <td>${s.roll_number}</td>
+                <td>${s.class}</td>
+                <td>${s.email || 'N/A'}</td>
+                <td>${s.phone || 'N/A'}</td>
+                <td>${new Date(s.assigned_on).toLocaleString()}</td>
+                <td>
+                    <button onclick="unassignStudent(${s.student_id})">🗑️ Unassign</button>
+                </td>`;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error fetching assigned students:', error);
+        alert('Failed to load assigned students');
+    }
 }
 
 // ---------- Assign Student ----------
 async function assignStudent(){
-  const studentId = prompt("Enter Student ID to assign");
-  if(!studentId) return;
-  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/assigned-students",{
-    method:"POST",
-    headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
-    body:JSON.stringify({ student_id: studentId })
-  });
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchAssigned(); }
-  else alert(data.error||data.message);
+    const studentId = prompt("Enter Student ID to assign");
+    if(!studentId) return;
+    
+    try {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/assigned-students",{
+            method: "POST",
+            headers: { "Authorization": "Bearer "+token, "Content-Type": "application/json" },
+            body: JSON.stringify({ student_id: studentId })
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchAssigned(); 
+        } else {
+            alert(data.error || data.message);
+        }
+    } catch (error) {
+        console.error('Error assigning student:', error);
+        alert('Failed to assign student');
+    }
 }
 
 // ---------- Unassign Student ----------
 async function unassignStudent(studentId){
-  if(!confirm("Unassign student?")) return;
-  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/assigned-students/${studentId}`,{
-    method:"DELETE", headers:{"Authorization":"Bearer "+token}
-  });
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchAssigned(); }
-  else alert(data.error||data.message);
+    if(!confirm("Unassign student?")) return;
+    
+    try {
+        const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/assigned-students/${studentId}`,{
+            method: "DELETE", 
+            headers: {"Authorization": "Bearer "+token}
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchAssigned(); 
+        } else {
+            alert(data.error || data.message);
+        }
+    } catch (error) {
+        console.error('Error unassigning student:', error);
+        alert('Failed to unassign student');
+    }
 }
-
 
 // ---------- Fetch Attendance ----------
 async function fetchAttendance(){
-  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/attendance", {
-    headers: { "Authorization": "Bearer " + token }
-  });
-  const records = await res.json();
-  const tbody = document.querySelector("#attendanceTable tbody");
-  tbody.innerHTML = "";
-  records.forEach(r=>{
-    const time = new Date(r.timestamp).toLocaleString();
-    row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${r.attendance_id}</td>
-      <td>${r.student_id}</td>
-      <td>${r.student_name}</td>
-      <td>${r.subject_id}</td>
-      <td>${r.subject_name}</td>
-      <td>${time}</td>
-      <td>
-        <button onclick="editAttendance(${r.attendance_id},${r.student_id},${r.subject_id},'${r.subject_name}','${r.timestamp}')">✏️</button>
-        <button onclick="deleteAttendance(${r.attendance_id})">🗑️</button>
-      </td>`;
-    tbody.appendChild(row);
-  });
+    try {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/attendance", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) throw new Error('Failed to fetch attendance');
+        
+        const records = await res.json();
+        const tbody = document.querySelector("#attendanceTable tbody");
+        tbody.innerHTML = "";
+        
+        records.forEach(r => {
+            const time = new Date(r.timestamp).toLocaleString();
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${r.attendance_id}</td>
+                <td>${r.student_id}</td>
+                <td>${r.student_name}</td>
+                <td>${r.subject_id}</td>
+                <td>${r.subject_name}</td>
+                <td>${time}</td>
+                <td>
+                    <button onclick="editAttendance(${r.attendance_id},${r.student_id},${r.subject_id},'${r.subject_name}','${r.timestamp}')">✏️</button>
+                    <button onclick="deleteAttendance(${r.attendance_id})">🗑️</button>
+                </td>`;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error fetching attendance:', error);
+        alert('Failed to load attendance records');
+    }
 }
 
 // ---------- Add Student ----------
 async function addStudent(){
-  const name = prompt("Name"), roll = prompt("Roll Number"), cls = prompt("Class"), email = prompt("Email"), phone = prompt("Phone");
-  if(!name||!roll||!cls) return alert("Name, Roll, Class required!");
-  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/students",{
-    method:"POST",
-    headers:{ "Authorization": "Bearer "+token, "Content-Type":"application/json" },
-    body:JSON.stringify({name,roll_number:roll,class_name:cls,email,phone})
-  });
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchStudents(); }
-  else alert(data.error||data.message);
+    const name = prompt("Name");
+    const roll = prompt("Roll Number");
+    const cls = prompt("Class");
+    const email = prompt("Email") || '';
+    const phone = prompt("Phone") || '';
+    
+    if(!name || !roll || !cls) return alert("Name, Roll, and Class are required!");
+    
+    try {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/students",{
+            method: "POST",
+            headers: { "Authorization": "Bearer "+token, "Content-Type": "application/json" },
+            body: JSON.stringify({name, roll_number: roll, class_name: cls, email, phone})
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchStudents(); 
+        } else {
+            alert(data.error || data.message);
+        }
+    } catch (error) {
+        console.error('Error adding student:', error);
+        alert('Failed to add student');
+    }
 }
 
 // ---------- Edit Student ----------
 async function editStudent(id){
-  const name = prompt("New Name"), roll = prompt("New Roll"), cls = prompt("New Class"), email = prompt("Email"), phone = prompt("Phone");
-  if(!name||!roll||!cls) return alert("Name, Roll, Class required!");
-  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/students/${id}`,{
-    method:"PUT",
-    headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
-    body:JSON.stringify({name,roll_number:roll,class_name:cls,email,phone})
-  });
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchStudents(); }
-  else alert(data.error);
+    const name = prompt("New Name");
+    const roll = prompt("New Roll");
+    const cls = prompt("New Class");
+    const email = prompt("Email") || '';
+    const phone = prompt("Phone") || '';
+    
+    if(!name || !roll || !cls) return alert("Name, Roll, and Class are required!");
+    
+    try {
+        const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/students/${id}`,{
+            method: "PUT",
+            headers: { "Authorization": "Bearer "+token, "Content-Type": "application/json" },
+            body: JSON.stringify({name, roll_number: roll, class_name: cls, email, phone})
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchStudents(); 
+        } else {
+            alert(data.error);
+        }
+    } catch (error) {
+        console.error('Error editing student:', error);
+        alert('Failed to edit student');
+    }
 }
 
 // ---------- Delete Student ----------
 async function deleteStudent(id){
-  if(!confirm("Delete student?")) return;
-  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/students/${id}`,{method:"DELETE", headers:{"Authorization":"Bearer "+token}});
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchStudents(); }
-  else alert(data.error||data.message);
+    if(!confirm("Delete student?")) return;
+    
+    try {
+        const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/students/${id}`,{
+            method: "DELETE", 
+            headers: {"Authorization": "Bearer "+token}
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchStudents(); 
+        } else {
+            alert(data.error || data.message);
+        }
+    } catch (error) {
+        console.error('Error deleting student:', error);
+        alert('Failed to delete student');
+    }
 }
 
 // ---------- Add Attendance ----------
 async function addAttendance(){
-  const sid = prompt("Student ID");
-  const subjectId = prompt("Subject ID");
-  const subjectName = prompt("Subject Name");
-  if(!sid || !subjectId || !subjectName) return alert("All fields required!");
+    const sid = prompt("Student ID");
+    const subjectId = prompt("Subject ID");
+    const subjectName = prompt("Subject Name");
+    if(!sid || !subjectId || !subjectName) return alert("All fields required!");
 
-  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/attendance",{
-    method:"POST",
-    headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
-    body:JSON.stringify({student_id:sid, subject_id:subjectId, subject_name:subjectName})
-  });
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchAttendance(); }
-  else alert(data.error||data.message);
+    try {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/attendance",{
+            method: "POST",
+            headers: { "Authorization": "Bearer "+token, "Content-Type": "application/json" },
+            body: JSON.stringify({student_id: sid, subject_id: subjectId, subject_name: subjectName})
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchAttendance(); 
+        } else {
+            alert(data.error || data.message);
+        }
+    } catch (error) {
+        console.error('Error adding attendance:', error);
+        alert('Failed to add attendance');
+    }
 }
 
 // ---------- Edit Attendance ----------
-async function editAttendance(id,sid,subjectId,subjectName,timestamp){
-  const newSid = prompt("Student ID",sid);
-  const newSubjectId = prompt("Subject ID",subjectId);
-  const newSubjectName = prompt("Subject Name",subjectName);
-  const ts = prompt("Timestamp YYYY-MM-DD HH:MM:SS",timestamp);
-  if(!newSid || !newSubjectId || !newSubjectName || !ts) return alert("Required!");
+async function editAttendance(id, sid, subjectId, subjectName, timestamp){
+    const newSid = prompt("Student ID", sid);
+    const newSubjectId = prompt("Subject ID", subjectId);
+    const newSubjectName = prompt("Subject Name", subjectName);
+    const ts = prompt("Timestamp YYYY-MM-DD HH:MM:SS", timestamp);
+    if(!newSid || !newSubjectId || !newSubjectName || !ts) return alert("All fields required!");
 
-  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/attendance/${id}`,{
-    method:"PUT",
-    headers:{ "Authorization":"Bearer "+token,"Content-Type":"application/json" },
-    body:JSON.stringify({student_id:newSid, subject_id:newSubjectId, subject_name:newSubjectName, timestamp:ts})
-  });
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchAttendance(); }
-  else alert(data.error||data.message);
+    try {
+        const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/attendance/${id}`,{
+            method: "PUT",
+            headers: { "Authorization": "Bearer "+token, "Content-Type": "application/json" },
+            body: JSON.stringify({
+                student_id: newSid, 
+                subject_id: newSubjectId, 
+                subject_name: newSubjectName, 
+                timestamp: ts
+            })
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchAttendance(); 
+        } else {
+            alert(data.error || data.message);
+        }
+    } catch (error) {
+        console.error('Error editing attendance:', error);
+        alert('Failed to edit attendance');
+    }
 }
 
 // ---------- Delete Attendance ----------
 async function deleteAttendance(id){
-  if(!confirm("Delete attendance?")) return;
-  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/attendance/${id}`,{method:"DELETE", headers:{"Authorization":"Bearer "+token}});
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchAttendance(); }
-  else alert(data.error||data.message);
+    if(!confirm("Delete attendance record?")) return;
+    
+    try {
+        const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/attendance/${id}`,{
+            method: "DELETE", 
+            headers: {"Authorization": "Bearer "+token}
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchAttendance(); 
+        } else {
+            alert(data.error || data.message);
+        }
+    } catch (error) {
+        console.error('Error deleting attendance:', error);
+        alert('Failed to delete attendance');
+    }
 }
 
-// ---------- Fetch Timetable ----------
 // ---------- Fetch Timetable ----------
 async function fetchTimetable(){
-  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/timetable", {
-    headers: { "Authorization": "Bearer " + token }
-  });
-  const rows = await res.json();
-  const tbody = document.querySelector("#timetableTable tbody");
-  tbody.innerHTML = "";
-  rows.forEach(r=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${r.timetable_id}</td>
-      <td>${r.subject_name}</td>
-      <td>${r.day}</td>
-      <td>${r.start_time}</td>
-      <td>${r.end_time}</td>
-      <td>
-        <button onclick="editTimetable(${r.timetable_id}, '${r.day}', '${r.start_time}', '${r.end_time}', ${r.subject_id})">✏️</button>
-        <button onclick="deleteTimetable(${r.timetable_id})">🗑️</button>
-      </td>`;
-    tbody.appendChild(tr);
-  });
+    try {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/timetable", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) throw new Error('Failed to fetch timetable');
+        
+        const rows = await res.json();
+        const tbody = document.querySelector("#timetableTable tbody");
+        tbody.innerHTML = "";
+        
+        rows.forEach(r => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${r.timetable_id}</td>
+                <td>${r.subject_name}</td>
+                <td>${r.day}</td>
+                <td>${r.start_time}</td>
+                <td>${r.end_time}</td>
+                <td>
+                    <button onclick="editTimetable(${r.timetable_id}, '${r.day}', '${r.start_time}', '${r.end_time}', ${r.subject_id})">✏️</button>
+                    <button onclick="deleteTimetable(${r.timetable_id})">🗑️</button>
+                </td>`;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('Error fetching timetable:', error);
+        alert('Failed to load timetable');
+    }
 }
-
 
 // ---------- Add Timetable ----------
 async function addTimetable(){
-  const subject_id = prompt("Subject ID");
-  const day = prompt("Day (e.g. Monday)");
-  const start_time = prompt("Start Time (HH:MM:SS)");
-  const end_time = prompt("End Time (HH:MM:SS)");
+    const subject_id = prompt("Subject ID");
+    const day = prompt("Day (e.g. Monday)");
+    const start_time = prompt("Start Time (HH:MM:SS)");
+    const end_time = prompt("End Time (HH:MM:SS)");
 
-  if(!subject_id||!day||!start_time||!end_time) return alert("All fields required!");
+    if(!subject_id || !day || !start_time || !end_time) return alert("All fields required!");
 
-  const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/timetable",{
-    method:"POST",
-    headers:{ "Authorization":"Bearer "+token, "Content-Type":"application/json" },
-    body:JSON.stringify({subject_id, day, start_time, end_time})
-  });
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchTimetable(); }
-  else alert(data.error||data.message);
+    try {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/faculty/timetable",{
+            method: "POST",
+            headers: { "Authorization": "Bearer "+token, "Content-Type": "application/json" },
+            body: JSON.stringify({subject_id, day, start_time, end_time})
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchTimetable(); 
+        } else {
+            alert(data.error || data.message);
+        }
+    } catch (error) {
+        console.error('Error adding timetable:', error);
+        alert('Failed to add timetable');
+    }
 }
-
 
 // ---------- Edit Timetable ----------
 async function editTimetable(id, day, start_time, end_time, subject_id){
-  const newDay = prompt("Day", day);
-  const newStart = prompt("Start Time", start_time);
-  const newEnd = prompt("End Time", end_time);
-  const newSubject = prompt("Subject ID", subject_id);
-  if(!newDay||!newStart||!newEnd||!newSubject) return;
+    const newDay = prompt("Day", day);
+    const newStart = prompt("Start Time", start_time);
+    const newEnd = prompt("End Time", end_time);
+    const newSubject = prompt("Subject ID", subject_id);
+    if(!newDay || !newStart || !newEnd || !newSubject) return;
 
-  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/timetable/${id}`,{
-    method:"PUT",
-    headers:{ "Authorization":"Bearer "+token, "Content-Type":"application/json" },
-    body:JSON.stringify({subject_id:newSubject, day:newDay, start_time:newStart, end_time:newEnd})
-  });
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchTimetable(); }
-  else alert(data.error||data.message);
+    try {
+        const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/timetable/${id}`,{
+            method: "PUT",
+            headers: { "Authorization": "Bearer "+token, "Content-Type": "application/json" },
+            body: JSON.stringify({
+                subject_id: newSubject, 
+                day: newDay, 
+                start_time: newStart, 
+                end_time: newEnd
+            })
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchTimetable(); 
+        } else {
+            alert(data.error || data.message);
+        }
+    } catch (error) {
+        console.error('Error editing timetable:', error);
+        alert('Failed to edit timetable');
+    }
 }
 
 // ---------- Delete Timetable ----------
 async function deleteTimetable(id){
-  if(!confirm("Delete timetable entry?")) return;
-  const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/timetable/${id}`,{
-    method:"DELETE", headers:{"Authorization":"Bearer "+token}
-  });
-  const data = await res.json();
-  if(res.ok){ alert(data.message); fetchTimetable(); }
-  else alert(data.error||data.message);
+    if(!confirm("Delete timetable entry?")) return;
+    
+    try {
+        const res = await fetch(`https://face-attendance-9vis.onrender.com/faculty/timetable/${id}`,{
+            method: "DELETE", 
+            headers: {"Authorization": "Bearer "+token}
+        });
+        const data = await res.json();
+        if(res.ok){ 
+            alert(data.message); 
+            fetchTimetable(); 
+        } else {
+            alert(data.error || data.message);
+        }
+    } catch (error) {
+        console.error('Error deleting timetable:', error);
+        alert('Failed to delete timetable');
+    }
 }
 
-
 // ---------- Initial Load ----------
-fetchStudents();  // already existing (all students)
-fetchAssigned();  // new function
-fetchAttendance();
-fetchTimetable(); 
+document.addEventListener('DOMContentLoaded', function() {
+    fetchStudents();
+    fetchAssigned();
+    fetchAttendance();
+    fetchTimetable();
+});
 
 </script>
 </body>

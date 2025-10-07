@@ -5,68 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-
   <style>
     body {
       background: #f4f7fb;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-
     h2 {
       font-weight: 600;
       color: #2c3e50;
       text-align: center;
       margin: 20px 0;
     }
-
-    /* Navigation Buttons */
-    .nav-buttons {
-      text-align: center;
-      margin: 20px 0;
-    }
-    .nav-buttons button {
-      padding: 10px 20px;
-      margin: 6px;
-      cursor: pointer;
-      border: none;
-      background: #4e73df;
-      color: white;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 15px;
-      transition: 0.2s ease;
-    }
-    .nav-buttons button:hover {
-      background: #2e59d9;
-      transform: translateY(-2px);
-      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    }
-    .nav-buttons button:active {
-      transform: scale(0.97);
-    }
-
-    /* Logout button */
-    .logout-btn {
-      background: #e74a3b !important;
-    }
-    .logout-btn:hover {
-      background: #c0392b !important;
-    }
-
-    /* Card design */
-    .card {
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-top: 20px;
-    }
-
-    /* Table design */
-    table {
-      border-radius: 10px;
-      overflow: hidden;
-      width: 100%;
+    .section {
+      display: none;
     }
     .table th {
       text-align: center;
@@ -81,20 +32,32 @@
     tr:hover td {
       background: #eef3ff;
     }
-
-    /* Log box */
-    #log { 
-      margin-top: 20px; 
-      white-space: pre-wrap; 
-      text-align: left; 
-      max-width: 800px; 
-      margin: auto; 
-      background: #fff; 
-      padding: 20px; 
-      border-radius: 10px; 
-      box-shadow: 0 0 10px rgba(0,0,0,0.1); 
-      font-size: 14px;
-      line-height: 1.5;
+    .download-card {
+      background: #e7f3ff;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+      border-left: 4px solid #28a745;
+    }
+    .download-btn {
+      background: #28a745;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+    .download-btn:hover {
+      background: #218838;
+    }
+    .step {
+      margin: 8px 0;
+      padding: 8px;
+      background: white;
+      border-radius: 5px;
+      border-left: 3px solid #28a745;
     }
   </style>
 </head>
@@ -113,155 +76,220 @@
         <div class="card shadow p-3">
           <h4>Student Registration</h4>
           <form id="studentForm">
-              <input type="text" id="sname" placeholder="Name" class="form-control mb-2" required>
-              <input type="text" id="sroll" placeholder="Roll Number" class="form-control mb-2" required>
-              <input type="text" id="sclass" placeholder="Class" class="form-control mb-2" required>
-              <input type="email" id="semail" placeholder="Email" class="form-control mb-2" required>
-              <input type="text" id="sphone" placeholder="Phone" class="form-control mb-2" required>
-              <button type="submit" class="btn btn-success">Confirm</button>
-              <button type="button" id="closeFormBtn" class="btn btn-secondary">Cancel</button>
+            <input type="text" id="sname" placeholder="Name" class="form-control mb-2" required>
+            <input type="text" id="sroll" placeholder="Roll Number" class="form-control mb-2" required>
+            <input type="text" id="sclass" placeholder="Class" class="form-control mb-2" required>
+            <input type="email" id="semail" placeholder="Email" class="form-control mb-2" required>
+            <input type="text" id="sphone" placeholder="Phone" class="form-control mb-2" required>
+            <button type="submit" class="btn btn-success">Confirm Registration</button>
+            <button type="button" id="closeFormBtn" class="btn btn-secondary">Cancel</button>
           </form>
           <div id="studentMsg" class="mt-2"></div>
         </div>
       </div>
     </div>
 
-    
-    <!-- Attendance Table -->
-    <!-- Navigation Buttons -->
-<div class="d-flex justify-content-center mb-4">
-  <button class="btn btn-primary mx-2" onclick="showSection('attendance')">✅ My Attendance</button>
-  <button class="btn btn-info mx-2" onclick="showSection('timetable')">📅 My Timetable</button>
-</div>
-
-<!-- Attendance Table -->
-<div id="attendance" class="section card shadow p-3 mb-4" style="display:none;">
-  <h4 class="mb-3">✅ My Attendance</h4>
-  <table class="table table-bordered">
-    <thead class="table-dark">
-      <tr>
-        <th>Attendance ID</th>
-        <th>Student ID</th>
-        <th>Name</th>
-        <th>Subject</th>
-        <th>Timestamp</th>
-      </tr>
-    </thead>
-    <tbody id="attendanceTable"></tbody>
-  </table>
-</div>
-
-<!-- Timetable Table -->
-<div id="timetable" class="section card shadow p-3 mb-4" style="display:none;">
-  <h4 class="mb-3">📅 My Timetable</h4>
-  <table class="table table-striped">
-    <thead class="table-primary">
-      <tr><th>Day</th><th>Subject</th><th>Start</th><th>End</th></tr>
-    </thead>
-    <tbody id="timetableTable"></tbody>
-  </table>
-</div>
-
-<script>
-function showSection(sectionId) {
-  // Hide all sections
-  document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
-  // Show selected section
-  document.getElementById(sectionId).style.display = "block";
-
-  // Call fetch functions if needed
-  if (sectionId === "attendance") fetchMyAttendance();
-  if (sectionId === "timetable") fetchTimetable();
-}
-</script>
-
-    <!-- Face Recognition -->
-    <div class="text-center mb-4">
-      <button class="btn btn-success" onclick="runFaceRecognition()">✅ Run Face Recognition</button>
+    <!-- Face Registration Instructions (shown after successful registration) -->
+    <div id="faceRegistrationSection" style="display: none;" class="download-card">
+      <h4>📸 Complete Your Face Registration</h4>
+      <p>Your basic information is registered. Now you need to register your face for attendance:</p>
+      
+      <button class="download-btn" onclick="downloadRegistrationTool()">
+        📥 Download Face Registration Tool
+      </button>
+      
+      <div class="instructions mt-3">
+        <h5>📋 How to complete face registration:</h5>
+        <div class="step">1. Download and run the tool above</div>
+        <div class="step">2. Enter your name exactly as: <strong id="registeredName"></strong></div>
+        <div class="step">3. Follow on-screen instructions to capture your face</div>
+        <div class="step">4. Your face data will be saved to the system</div>
+        <div class="step">5. You're now ready for automatic attendance!</div>
+      </div>
+      
+      <p class="mt-3"><small>💡 <strong>Important:</strong> Use the same name you registered with above.</small></p>
     </div>
 
-    <!-- Logs -->
-    <div id="log"></div>
+    <!-- Navigation Buttons -->
+    <div class="d-flex justify-content-center mb-4">
+      <button class="btn btn-primary mx-2" onclick="showSection('attendance')">✅ My Attendance</button>
+      <button class="btn btn-info mx-2" onclick="showSection('timetable')">📅 My Timetable</button>
+    </div>
+
+    <!-- Attendance Table -->
+    <div id="attendance" class="section card shadow p-3 mb-4">
+      <h4 class="mb-3">✅ My Attendance</h4>
+      <table class="table table-bordered">
+        <thead class="table-dark">
+          <tr>
+            <th>Attendance ID</th>
+            <th>Student ID</th>
+            <th>Name</th>
+            <th>Subject</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="attendanceTable"></tbody>
+      </table>
+    </div>
+
+    <!-- Timetable Table -->
+    <div id="timetable" class="section card shadow p-3 mb-4">
+      <h4 class="mb-3">📅 My Timetable</h4>
+      <table class="table table-striped">
+        <thead class="table-primary">
+          <tr><th>Day</th><th>Subject</th><th>Start</th><th>End</th></tr>
+        </thead>
+        <tbody id="timetableTable"></tbody>
+      </table>
+    </div>
+
+
+    <section id="faceTools">
+  <h2>🎭 Face Recognition Tools</h2>
+  
+  <div class="download-section">
+    <h3>👤 Student Registration Tool</h3>
+    <p>Use this tool to register new students' faces in the system</p>
+    <button class="download-btn" onclick="downloadRegistrationTool()">
+      📥 Download Registration Tool
+    </button>
+    <div class="instructions">
+      <h4>📋 How to use:</h4>
+      <div class="step">1. Download and run the tool</div>
+      <div class="step">2. Enter student name when prompted</div>
+      <div class="step">3. Follow on-screen instructions to capture face images</div>
+      <div class="step">4. Facial data will be saved to the online system</div>
+      <div class="step">5. Student is now ready for face recognition attendance</div>
+    </div>
   </div>
 
-<script>
-const token = localStorage.getItem("token");
 
-// ======================
-// 🎯 Open/Close Student Form
-// ======================
-document.getElementById("openFormBtn").addEventListener("click", () => {
-    document.getElementById("studentFormContainer").style.display = "block";
-});
-document.getElementById("closeFormBtn").addEventListener("click", () => {
-    document.getElementById("studentFormContainer").style.display = "none";
-});
+  <div class="download-section">
+    <h3>❓ Support & Documentation</h3>
+    <button class="download-btn" onclick="downloadUserManual()" style="background: #6c757d;">
+      📖 Download User Manual
+    </button>
+    <button class="download-btn" onclick="contactSupport()" style="background: #dc3545;">
+      📞 Contact Support
+    </button>
+  </div>
+</section>
+  </div>
 
-// ======================
-// 📌 Student Registration
-// ======================
-document.getElementById("studentForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = document.getElementById("sname").value.trim();
-    const roll = document.getElementById("sroll").value.trim();
-    const sclass = document.getElementById("sclass").value.trim();
-    const email = document.getElementById("semail").value.trim();
-    const phone = document.getElementById("sphone").value.trim();
-
-    try {
-        const res = await fetch("https://face-attendance-9vis.onrender.com/students", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-            body: JSON.stringify({ name, roll_number: roll, class_name: sclass, email, phone })
-        });
-        const data = await res.json();
-        document.getElementById("studentMsg").innerText = res.ok ? data.message : "❌ Error: " + (data.error || data.message);
-        if (res.ok) runPipeline(name);
-    } catch (err) {
-        document.getElementById("studentMsg").innerText = "❌ Request failed: " + err;
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "login.html";
     }
-});
 
-// ======================
-// 📌 Run Pipeline
-// ======================
-async function runPipeline(name) {
-    const log = document.getElementById("log");
-    log.innerText = "⏳ Running pipeline for " + name + "...";
-    try {
-        const res = await fetch(`https://face-attendance-9vis.onrender.com/pipeline/${encodeURIComponent(name)}`, { headers: { "Authorization": "Bearer " + token }});
-        const data = await res.json();
-        log.innerText = res.ok ? `✅ Pipeline finished!\n\n${data.log}` : `❌ Error: ${data.error}\nDetails: ${data.details}`;
-    } catch (err) { log.innerText = "❌ Request failed: " + err; }
+    // ======================
+    // 🎯 Download Functions
+    // ======================
+    function downloadRegistrationTool() {
+      // Replace with your actual download link
+      window.open('https://drive.google.com/file/d/1vLkHHtt3JhSdbpNPTv4_cWm6f4jskPSD/view?usp=sharing', '_blank');
+      alert('Face Registration Tool downloaded! Run it and enter your name to complete registration.');
+    }
+    
+
+  function downloadUserManual() {
+    window.open('mailto:adscem2025@gmail.com?subject=Request User Manual - Face Recognition System&body=Hello,%0D%0A%0D%0APlease send me the User Manual for the Face Recognition Attendance System.%0D%0A%0D%0AThank you.', '_blank');
 }
 
-// ======================
-// 📌 Face Recognition
-// ======================
-async function runFaceRecognition() {
-    const log = document.getElementById("log");
-    log.innerText = "⏳ Running face recognition...";
-    try {
-        const res = await fetch("https://face-attendance-9vis.onrender.com/face-recognition", { headers: { "Authorization": "Bearer " + token }});
-        const data = await res.json();
-        log.innerText = res.ok ? `✅ Face recognition done:\n${data.output}` : `❌ Error: ${data.error}`;
-    } catch (err) { log.innerText = "❌ Request failed: " + err; }
+function contactSupport() {
+    window.location.href = 'mailto:adscem2025@gmail.com?subject=Faculty Support - Face Recognition Attendance System&body=Hello Support Team,%0D%0A%0D%0AI need assistance with the Face Recognition Attendance System.%0D%0A%0D%0AIssue Description:%0D%0A%0D%0AThank you.';
 }
 
-// ======================
-// 📌 Fetch Attendance
-// ======================
-// ======================
-// 📌 Fetch Attendance
-// ======================
-async function fetchMyAttendance() {
-    try {
+  
+    // ======================
+    // 🎯 Open/Close Student Form
+    // ======================
+    document.getElementById("openFormBtn").addEventListener("click", () => {
+      document.getElementById("studentFormContainer").style.display = "block";
+    });
+    
+    document.getElementById("closeFormBtn").addEventListener("click", () => {
+      document.getElementById("studentFormContainer").style.display = "none";
+    });
+
+    // ======================
+    // 📌 Student Registration
+    // ======================
+    document.getElementById("studentForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("sname").value.trim();
+      const roll = document.getElementById("sroll").value.trim();
+      const sclass = document.getElementById("sclass").value.trim();
+      const email = document.getElementById("semail").value.trim();
+      const phone = document.getElementById("sphone").value.trim();
+
+      try {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/students", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+          body: JSON.stringify({ name, roll_number: roll, class_name: sclass, email, phone })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          // Show success message and face registration instructions
+          document.getElementById("studentMsg").innerHTML = `
+            <div class="alert alert-success">
+              ✅ Student registered successfully!<br>
+              <strong>Student ID:</strong> ${data.student_id}
+            </div>
+          `;
+          
+          // Show face registration section
+          document.getElementById("registeredName").textContent = name;
+          document.getElementById("faceRegistrationSection").style.display = "block";
+          
+          // Clear form and close
+          document.getElementById("studentForm").reset();
+          document.getElementById("studentFormContainer").style.display = "none";
+        } else {
+          document.getElementById("studentMsg").innerHTML = `
+            <div class="alert alert-danger">
+              ❌ Error: ${data.error || data.message}
+            </div>
+          `;
+        }
+      } catch (err) {
+        document.getElementById("studentMsg").innerHTML = `
+          <div class="alert alert-danger">
+            ❌ Request failed: ${err.message}
+          </div>
+        `;
+      }
+    });
+
+    // ======================
+    // 📌 Section Navigation
+    // ======================
+    function showSection(sectionId) {
+      document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+      document.getElementById(sectionId).style.display = "block";
+
+      if (sectionId === "attendance") fetchMyAttendance();
+      if (sectionId === "timetable") fetchTimetable();
+    }
+
+    // ======================
+    // 📌 Fetch Attendance
+    // ======================
+    async function fetchMyAttendance() {
+      try {
         const res = await fetch("https://face-attendance-9vis.onrender.com/student/attendance", { 
-            headers: { "Authorization": "Bearer " + token }
+          headers: { "Authorization": "Bearer " + token }
         });
         const records = await res.json();
         let rows = "";
-        records.forEach(r => {
+        if (records.length === 0) {
+          rows = `<tr><td colspan="5" class="text-center">No attendance records found</td></tr>`;
+        } else {
+          records.forEach(r => {
             rows += `
               <tr>
                 <td>${r.attendance_id}</td>
@@ -271,36 +299,51 @@ async function fetchMyAttendance() {
                 <td>${new Date(r.timestamp).toLocaleString()}</td>
               </tr>
             `;
-        });
+          });
+        }
         document.getElementById("attendanceTable").innerHTML = rows;
-    } catch (err) {
+      } catch (err) {
         console.error("❌ Error fetching attendance:", err);
+        document.getElementById("attendanceTable").innerHTML = `<tr><td colspan="5" class="text-center">Error loading attendance</td></tr>`;
+      }
     }
-}
-fetchMyAttendance();
 
-
-// ======================
-// 📌 Fetch Timetable
-// ======================
-async function fetchTimetable() {
-    try {
-        const res = await fetch("https://face-attendance-9vis.onrender.com/student/timetable", { headers: { "Authorization": "Bearer " + token }});
+    // ======================
+    // 📌 Fetch Timetable
+    // ======================
+    async function fetchTimetable() {
+      try {
+        const res = await fetch("https://face-attendance-9vis.onrender.com/student/timetable", { 
+          headers: { "Authorization": "Bearer " + token }
+        });
         const data = await res.json();
         let rows = "";
-        data.forEach(t => rows += `<tr><td>${t.day}</td><td>${t.subject}</td><td>${t.start_time}</td><td>${t.end_time}</td></tr>`);
+        if (data.length === 0) {
+          rows = `<tr><td colspan="4" class="text-center">No timetable found</td></tr>`;
+        } else {
+          data.forEach(t => rows += `<tr><td>${t.day}</td><td>${t.subject}</td><td>${t.start_time}</td><td>${t.end_time}</td></tr>`);
+        }
         document.getElementById("timetableTable").innerHTML = rows;
-    } catch (err) { console.error("❌ Error fetching timetable:", err); }
-}
-fetchTimetable();
+      } catch (err) { 
+        console.error("❌ Error fetching timetable:", err);
+        document.getElementById("timetableTable").innerHTML = `<tr><td colspan="4" class="text-center">Error loading timetable</td></tr>`;
+      }
+    }
 
-// ======================
-// 📌 Logout
-// ======================
-function logout() {
-    localStorage.removeItem("token");
-    window.location.href = "pipeline.html";
-}
-</script>
+    // ======================
+    // 📌 Logout
+    // ======================
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "pipeline.html";
+    }
+
+    // Load initial data
+    fetchMyAttendance();
+    fetchTimetable();
+    
+    // Show attendance by default
+    showSection('attendance');
+  </script>
 </body>
 </html>

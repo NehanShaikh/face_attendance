@@ -1346,7 +1346,7 @@ app.get("/admin/subjects/faculty/:facultyId", authenticateToken, async (req, res
 
 
 // ---------------- FULL PIPELINE ----------------
-app.get("/pipeline/:name", (req, res) => {
+/*app.get("/pipeline/:name", (req, res) => {
   const name = req.params.name;
   const scripts = [
     "1_capture_images.py",
@@ -1380,10 +1380,10 @@ app.get("/pipeline/:name", (req, res) => {
   };
 
   runNext(0);
-});
+});*/
 
 // ---------------- FACE RECOGNITION ----------------
-app.get("/face-recognition", (req, res) => {
+/*app.get("/face-recognition", (req, res) => {
   const scriptPath = path.join(__dirname, "python_scripts", "4_face_recognition.py");
   const command = `python "${scriptPath}"`;
 
@@ -1396,7 +1396,7 @@ app.get("/face-recognition", (req, res) => {
     console.log("✅ Face recognition executed");
     res.json({ output: stdout || stderr });
   });
-});
+});*/
 
 // ---------------- CATCH ALL ----------------
 app.use((req, res) => res.status(404).json({ error: "Route not found" }));
