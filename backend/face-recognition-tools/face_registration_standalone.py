@@ -136,7 +136,7 @@ class FaceRegistration:
         return len(embeddings) > 0
     
     def insert_embedding(self, name):
-        """Step 4: Insert embedding into database - FIXED VERSION"""
+        """Step 4: Insert embedding into database - FIXED TO INCLUDE NAME"""
         emb_file = f"embeddings/{name}_embeddings.pkl"
 
         if not os.path.exists(emb_file):
@@ -157,54 +157,83 @@ class FaceRegistration:
             conn = psycopg2.connect(**self.db_config)
             cursor = conn.cursor()
             
-            # Check if student already exists
-            cursor.execute("SELECT student_id FROM students WHERE name = %s", (name,))
+            print(f"🔍 Looking for student with name: '{name}'")
+            
+            # First, find the student by name (case-insensitive search)
+            cursor.execute("SELECT student_id, name FROM students WHERE LOWER(name) = LOWER(%s)", (name,))
             result = cursor.fetchone()
             
-            if result:
-                # Student exists - update their embedding
-                student_id = result[0]
-                print(f"🔄 Student {name} exists (ID: {student_id}), updating embedding...")
+            if not result:
+                print(f"❌ No student found with name: '{name}'")
                 
-                # Convert embedding to bytes
-                emb_bytes = avg_embedding.tobytes()
+                # Show available students for debugging
+                print("💡 Available students in database:")
+                cursor.execute("SELECT student_id, name FROM students ORDER BY student_id")
+                available_students = cursor.fetchall()
+                if available_students:
+                    for sid, sname in available_students:
+                        print(f"   - ID: {sid}, Name: '{sname}'")
+                else:
+                    print("   - No students found in database")
                 
-                # Update embedding
+                return False
+            
+            student_id, actual_name = result
+            print(f"✅ Found student - ID: {student_id}, Name: '{actual_name}'")
+            
+            # Convert embedding to bytes then to hex string for TEXT column
+            emb_bytes = avg_embedding.tobytes()
+            emb_hex = emb_bytes.hex()  # Convert to hex string for TEXT column
+            print(f"🔍 Embedding size: {len(emb_bytes)} bytes, Hex length: {len(emb_hex)}")
+            
+            # Check if embedding already exists for this student
+            cursor.execute("SELECT embedding_id FROM face_embeddings WHERE student_id = %s", (student_id,))
+            existing_embedding = cursor.fetchone()
+            
+            if existing_embedding:
+                # Update existing embedding WITH NAME
                 cursor.execute("""
                     UPDATE face_embeddings 
-                    SET embedding = %s 
+                    SET embedding = %s, name = %s
                     WHERE student_id = %s
-                """, (emb_bytes, student_id))
-                
-                # Check if any row was updated
-                if cursor.rowcount == 0:
-                    # No existing embedding, insert new one
-                    cursor.execute("""
-                        INSERT INTO face_embeddings (student_id, embedding) 
-                        VALUES (%s, %s)
-                    """, (student_id, emb_bytes))
-                    
+                """, (emb_hex, actual_name, student_id))
+                print(f"🔄 Updated existing face embedding for '{actual_name}'")
             else:
-                # Student doesn't exist - create new student and embedding
-                cursor.execute("INSERT INTO students (name) VALUES (%s) RETURNING student_id", (name,))
-                student_id = cursor.fetchone()[0]
-                print(f"✅ Created new student {name} (ID: {student_id})")
-                
-                # Convert embedding to bytes
-                emb_bytes = avg_embedding.tobytes()
-                
-                # Insert new embedding
+                # Insert new embedding WITH NAME
                 cursor.execute("""
-                    INSERT INTO face_embeddings (student_id, embedding) 
-                    VALUES (%s, %s)
-                """, (student_id, emb_bytes))
+                    INSERT INTO face_embeddings (student_id, name, embedding) 
+                    VALUES (%s, %s, %s)
+                """, (student_id, actual_name, emb_hex))
+                print(f"✅ Inserted new face embedding for '{actual_name}'")
+            
+            # Verify the insertion
+            cursor.execute("""
+                SELECT embedding_id, student_id, name, LENGTH(embedding) as embedding_length
+                FROM face_embeddings 
+                WHERE student_id = %s
+            """, (student_id,))
+            verification = cursor.fetchone()
             
             conn.commit()
-            print(f"✅ Embedding saved for {name} (Student ID: {student_id})")
+            
+            if verification:
+                emb_id, verified_id, verified_name, embedding_length = verification
+                print(f"🎉 VERIFICATION SUCCESS!")
+                print(f"   - Embedding ID: {emb_id}")
+                print(f"   - Student ID: {verified_id}")
+                print(f"   - Student Name: '{verified_name}'")
+                print(f"   - Embedding Length: {embedding_length} characters")
+                print(f"   - Face registration completed for '{verified_name}'")
+            else:
+                print("❌ VERIFICATION FAILED - No embedding found after insertion")
+                return False
+                
             return True
             
         except Exception as e:
             print(f"❌ Database error: {e}")
+            import traceback
+            traceback.print_exc()
             if 'conn' in locals():
                 conn.rollback()
             return False
