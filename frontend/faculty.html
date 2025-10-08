@@ -169,6 +169,21 @@
 <section id="faceTools">
   <h2>🎭 Face Recognition Tools</h2>
   
+    <div class="download-section">
+    <h3>📝 Classroom Attendance Tool</h3>
+    <p>Use this tool for daily classroom attendance via face recognition</p>
+    <button class="download-btn" onclick="downloadAttendanceTool()">
+      📥 Download Attendance Tool
+    </button>
+    <div class="instructions">
+      <h4>📋 How to use:</h4>
+      <div class="step">1. Download and run the tool</div>
+      <div class="step">2. It will open your camera automatically</div>
+      <div class="step">3. Position camera to capture students' faces</div>
+      <div class="step">4. Students look at camera to mark attendance</div>
+      <div class="step">5. Attendance syncs with online portal in real-time</div>
+    </div>
+
   <div class="download-section">
     <h3>👤 Student Registration Tool</h3>
     <p>Use this tool to register new students' faces in the system</p>
@@ -184,33 +199,30 @@
       <div class="step">5. Student is now ready for face recognition attendance</div>
     </div>
   </div>
-
-  <div class="download-section">
-    <h3>📝 Classroom Attendance Tool</h3>
-    <p>Use this tool for daily classroom attendance via face recognition</p>
-    <button class="download-btn" onclick="downloadAttendanceTool()">
-      📥 Download Attendance Tool
-    </button>
-    <div class="instructions">
-      <h4>📋 How to use:</h4>
-      <div class="step">1. Download and run the tool</div>
-      <div class="step">2. It will open your camera automatically</div>
-      <div class="step">3. Position camera to capture students' faces</div>
-      <div class="step">4. Students look at camera to mark attendance</div>
-      <div class="step">5. Attendance syncs with online portal in real-time</div>
-    </div>
   </div>
 
   <div class="download-section">
     <h3>❓ Support & Documentation</h3>
-    <button class="download-btn" onclick="downloadUserManual()" style="background: #6c757d;">
-      📖 Download User Manual
+    
+    <button class="download-btn" onclick="downloadUserManual()" style="background: #28a745;">
+        📖 Download User Manual
     </button>
+    
+    <button class="download-btn" onclick="downloadSupportGuide()" style="background: #17a2b8;">
+        🔧 Download Support Guide
+    </button>
+    
     <button class="download-btn" onclick="contactSupport()" style="background: #dc3545;">
-      📞 Contact Support
+        📞 Contact Support
     </button>
-  </div>
-</section>
+    
+    <div class="instructions mt-3">
+        <h4>📚 Documentation:</h4>
+        <div class="step">• <strong>User Manual</strong> - Complete setup and usage guide</div>
+        <div class="step">• <strong>Support Guide</strong> - Troubleshooting and FAQs</div>
+        <div class="step">• <strong>Contact Support</strong> - Email for personalized help</div>
+    </div>
+</div>
 
 <script>
 // ======================
@@ -226,7 +238,7 @@ function showSection(sectionId) {
 // ======================
 function downloadRegistrationTool() {
     // Replace with your actual download link
-    window.open('https://drive.google.com/file/d/1vLkHHtt3JhSdbpNPTv4_cWm6f4jskPSD/view?usp=sharing', '_blank');
+    window.open('https://drive.google.com/file/d/17N67qCz4cQFJaTcDEEtcWwy6LxGHw-MT/view?usp=sharing', '_blank');
     alert('Registration tool downloaded! Run the executable to register students\' faces.');
   }
 
@@ -237,11 +249,19 @@ function downloadRegistrationTool() {
   }
 
 function downloadUserManual() {
-    window.open('mailto:adscem2025@gmail.com?subject=Request User Manual - Face Recognition System&body=Hello,%0D%0A%0D%0APlease send me the User Manual for the Face Recognition Attendance System.%0D%0A%0D%0AThank you.', '_blank');
+    // Replace with your actual Google Drive PDF link
+    window.open('https://drive.google.com/file/d/1Glty7CJDjsVXlIP2fSCHhcWl2lo978fR/view?usp=sharing', '_blank');
+    alert('📖 User Manual downloaded! This PDF contains complete instructions for using the Face Recognition System.');
+}
+
+function downloadSupportGuide() {
+    // Replace with your actual Google Drive PDF link
+    window.open('https://drive.google.com/file/d/171rLZ9l1sw6yzSvvEMKKm_qVVkQpnPzD/view?usp=sharing', '_blank');
+    alert('🔧 Support Guide downloaded! This PDF contains troubleshooting and FAQ information.');
 }
 
 function contactSupport() {
-    window.location.href = 'mailto:adscem2025@gmail.com?subject=Faculty Support - Face Recognition Attendance System&body=Hello Support Team,%0D%0A%0D%0AI need assistance with the Face Recognition Attendance System.%0D%0A%0D%0AIssue Description:%0D%0A%0D%0AThank you.';
+    window.location.href = 'mailto:adscem2025@gmail.com?subject=Support Request - Face Recognition Attendance System&body=Hello Support Team,%0D%0A%0D%0AI need assistance with the Face Recognition Attendance System.%0D%0A%0D%0AIssue Description:%0D%0A%0D%0AThank you.';
 }
 
 // ======================

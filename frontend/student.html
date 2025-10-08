@@ -200,22 +200,27 @@
       </div>
 
       <div class="download-section">
-        <h3>❓ Support & Documentation</h3>
-        <button class="download-btn" onclick="downloadUserManual()" style="background: #6c757d;">
-          📖 Download User Manual
-        </button>
-        <button class="download-btn" onclick="contactSupport()" style="background: #dc3545;">
-          📞 Contact Support
-        </button>
-        
-        <div class="instructions mt-3">
-          <h4>🔧 System Requirements:</h4>
-          <div class="step">• <strong>Windows 10/11</strong> operating system</div>
-          <div class="step">• <strong>Webcam</strong> for face capture</div>
-          <div class="step">• <strong>Internet connection</strong> for database sync</div>
-          <div class="step">• <strong>4GB+ RAM</strong> recommended</div>
-        </div>
-      </div>
+    <h3>❓ Support & Documentation</h3>
+    
+    <button class="download-btn" onclick="downloadUserManual()" style="background: #28a745;">
+        📖 Download User Manual
+    </button>
+    
+    <button class="download-btn" onclick="downloadSupportGuide()" style="background: #17a2b8;">
+        🔧 Download Support Guide
+    </button>
+    
+    <button class="download-btn" onclick="contactSupport()" style="background: #dc3545;">
+        📞 Contact Support
+    </button>
+    
+    <div class="instructions mt-3">
+        <h4>📚 Documentation:</h4>
+        <div class="step">• <strong>User Manual</strong> - Complete setup and usage guide</div>
+        <div class="step">• <strong>Support Guide</strong> - Troubleshooting and FAQs</div>
+        <div class="step">• <strong>Contact Support</strong> - Email for personalized help</div>
+    </div>
+    </div>
     </div>
   </div>
 
@@ -230,17 +235,25 @@
     // ======================
     function downloadRegistrationTool() {
       // Replace with your actual download link
-      window.open('https://drive.google.com/file/d/1vLkHHtt3JhSdbpNPTv4_cWm6f4jskPSD/view?usp=sharing', '_blank');
+      window.open('https://drive.google.com/file/d/17N67qCz4cQFJaTcDEEtcWwy6LxGHw-MT/view?usp=sharing', '_blank');
       alert('Face Registration Tool downloaded! Run it and enter your name to complete registration.');
     }
 
     function downloadUserManual() {
-      window.open('mailto:adscem2025@gmail.com?subject=Request User Manual - Face Recognition System&body=Hello,%0D%0A%0D%0APlease send me the User Manual for the Face Recognition Attendance System.%0D%0A%0D%0AThank you.', '_blank');
-    }
+    // Replace with your actual Google Drive PDF link
+    window.open('https://drive.google.com/file/d/1Glty7CJDjsVXlIP2fSCHhcWl2lo978fR/view?usp=sharing', '_blank');
+    alert('📖 User Manual downloaded! This PDF contains complete instructions for using the Face Recognition System.');
+}
 
-    function contactSupport() {
-      window.location.href = 'mailto:adscem2025@gmail.com?subject=Faculty Support - Face Recognition Attendance System&body=Hello Support Team,%0D%0A%0D%0AI need assistance with the Face Recognition Attendance System.%0D%0A%0D%0AIssue Description:%0D%0A%0D%0AThank you.';
-    }
+function downloadSupportGuide() {
+    // Replace with your actual Google Drive PDF link
+    window.open('https://drive.google.com/file/d/171rLZ9l1sw6yzSvvEMKKm_qVVkQpnPzD/view?usp=sharing', '_blank');
+    alert('🔧 Support Guide downloaded! This PDF contains troubleshooting and FAQ information.');
+}
+
+function contactSupport() {
+    window.location.href = 'mailto:adscem2025@gmail.com?subject=Support Request - Face Recognition Attendance System&body=Hello Support Team,%0D%0A%0D%0AI need assistance with the Face Recognition Attendance System.%0D%0A%0D%0AIssue Description:%0D%0A%0D%0AThank you.';
+}
   
     // ======================
     // 🎯 Open/Close Student Form
