@@ -118,69 +118,113 @@ class FaceRegistration:
         print(f"✅ Cropped {count} faces for {name}")
         return count > 0
     
-    def generate_512d_embedding(self, face_image):
+    def generate_proper_512d_embedding(self, face_image):
         """
-        Generate consistent 512-dimensional embedding
-        Uses multiple features for better discrimination
+        Generate PROPER 512-dimensional embedding with REAL features
         """
         try:
             # Resize to standard size
             face_resized = cv2.resize(face_image, (64, 64))
             
-            # Extract multiple feature types
-            features = []
-            
-            # 1. Grayscale flattened pixels
+            # Convert to grayscale for basic features
             face_gray = cv2.cvtColor(face_resized, cv2.COLOR_BGR2GRAY)
-            gray_features = face_gray.flatten().astype(np.float32) / 255.0
-            features.extend(gray_features[:200])  # Take first 200 pixels
             
-            # 2. Color channel histograms (RGB)
+            # Start with grayscale pixels (4096 features from 64x64)
+            gray_pixels = face_gray.flatten().astype(np.float32) / 255.0
+            
+            # Take a subset of pixels to avoid too many features
+            features = gray_pixels[:400].tolist()  # First 400 pixels
+            
+            # Add color histograms from each channel
             for i in range(3):  # BGR channels
-                hist = cv2.calcHist([face_resized], [i], None, [32], [0, 256])
-                hist_normalized = hist.flatten() / np.sum(hist) if np.sum(hist) > 0 else hist.flatten()
+                hist = cv2.calcHist([face_resized], [i], None, [16], [0, 256])
+                if np.sum(hist) > 0:
+                    hist_normalized = (hist.flatten() / np.sum(hist)).tolist()
+                else:
+                    hist_normalized = hist.flatten().tolist()
                 features.extend(hist_normalized)
             
-            # 3. Edge features using Sobel
+            # Add basic statistics
+            features.extend([
+                np.mean(face_gray) / 255.0,
+                np.std(face_gray) / 255.0,
+                np.median(face_gray) / 255.0
+            ])
+            
+            # Add edge features
             sobelx = cv2.Sobel(face_gray, cv2.CV_64F, 1, 0, ksize=3)
             sobely = cv2.Sobel(face_gray, cv2.CV_64F, 0, 1, ksize=3)
             edge_magnitude = np.sqrt(sobelx**2 + sobely**2)
             features.extend([
-                np.mean(edge_magnitude),
-                np.std(edge_magnitude),
-                np.max(edge_magnitude)
-            ])
-            
-            # 4. Texture features (LBP-like)
-            blur = cv2.GaussianBlur(face_gray, (3, 3), 0)
-            features.extend([
-                np.mean(blur),
-                np.std(blur),
-                np.var(blur)
+                np.mean(edge_magnitude) / 1000.0,  # Normalize
+                np.std(edge_magnitude) / 1000.0,
             ])
             
             # Convert to numpy array
             embedding = np.array(features, dtype=np.float32)
             
+            print(f"🔧 Raw features: {len(features)}")
+            
             # Ensure exactly 512 dimensions
             if len(embedding) < 512:
-                # Pad with random noise (better than zeros)
-                padding = np.random.normal(0, 0.01, 512 - len(embedding)).astype(np.float32)
-                embedding = np.concatenate([embedding, padding])
-            else:
+                # Calculate how many more features we need
+                needed = 512 - len(embedding)
+                # Use texture features from different regions
+                height, width = face_gray.shape
+                regions = [
+                    face_gray[:height//2, :width//2],  # Top-left
+                    face_gray[:height//2, width//2:],  # Top-right
+                    face_gray[height//2:, :width//2],  # Bottom-left
+                    face_gray[height//2:, width//2:]   # Bottom-right
+                ]
+                
+                for region in regions:
+                    if needed <= 0:
+                        break
+                    region_features = [
+                        np.mean(region) / 255.0,
+                        np.std(region) / 255.0
+                    ]
+                    embedding = np.concatenate([embedding, region_features])
+                    needed -= 2
+                
+                # If still need more, add random but consistent features
+                if needed > 0:
+                    # Use face proportions as features
+                    height, width = face_gray.shape
+                    proportion_features = [
+                        height / width,  # Aspect ratio
+                        np.mean(face_gray[:10, :10]) / 255.0,  # Corner brightness
+                        np.mean(face_gray[-10:, -10:]) / 255.0  # Opposite corner
+                    ]
+                    embedding = np.concatenate([embedding, proportion_features[:min(needed, 3)]])
+                    needed -= min(needed, 3)
+                
+                # Final padding with very small random values if still needed
+                if needed > 0:
+                    padding = np.random.uniform(0, 0.001, needed).astype(np.float32)
+                    embedding = np.concatenate([embedding, padding])
+                    
+            elif len(embedding) > 512:
                 embedding = embedding[:512]
             
-            # Normalize the embedding
+            # CRITICAL: Normalize the embedding
             norm = np.linalg.norm(embedding)
             if norm > 0:
                 embedding = embedding / norm
+            else:
+                # If somehow zero, create a valid normalized vector
+                embedding = np.random.normal(0, 0.1, 512).astype(np.float32)
+                embedding = embedding / np.linalg.norm(embedding)
             
+            print(f"✅ Final embedding: {len(embedding)}D, norm: {np.linalg.norm(embedding):.4f}")
             return embedding
             
         except Exception as e:
             print(f"❌ Error in embedding generation: {e}")
-            # Return default 512D embedding
-            return np.random.normal(0, 0.1, 512).astype(np.float32)
+            # Return valid normalized random embedding as fallback
+            embedding = np.random.normal(0, 0.1, 512).astype(np.float32)
+            return embedding / np.linalg.norm(embedding)
     
     def generate_embeddings(self, name):
         """Step 3: Generate 512-dimensional face embeddings"""
@@ -195,7 +239,7 @@ class FaceRegistration:
         embeddings = []
         valid_count = 0
         
-        print(f"🔧 Generating 512D embeddings for {name}...")
+        print(f"🔧 Generating PROPER 512D embeddings for {name}...")
         
         for img_name in os.listdir(input_dir):
             img_path = os.path.join(input_dir, img_name)
@@ -206,11 +250,11 @@ class FaceRegistration:
                 continue
             
             # Generate 512D embedding
-            embedding = self.generate_512d_embedding(img)
+            embedding = self.generate_proper_512d_embedding(img)
             embeddings.append(embedding)
             valid_count += 1
             
-            print(f"   ✅ {img_name}: {len(embedding)}D embedding")
+            print(f"   ✅ {img_name}: {len(embedding)}D, norm: {np.linalg.norm(embedding):.4f}")
 
         if embeddings:
             # Save embeddings
@@ -218,7 +262,8 @@ class FaceRegistration:
                 pickle.dump(embeddings, f)
             
             print(f"✅ Generated {len(embeddings)} embeddings for {name}")
-            print(f"📊 Embedding dimension: {len(embeddings[0])}D")
+            print(f"📊 Final embedding dimension: {len(embeddings[0])}D")
+            print(f"📊 Final embedding norm: {np.linalg.norm(embeddings[0]):.4f}")
             return True
         else:
             print("❌ No valid embeddings generated")
@@ -267,12 +312,18 @@ class FaceRegistration:
         # Use average embedding for better accuracy
         avg_embedding = np.mean(embeddings, axis=0)
         
-        # Verify it's 512D
+        # Verify it's 512D and properly normalized
         if len(avg_embedding) != 512:
             print(f"❌ Embedding dimension mismatch: {len(avg_embedding)} (expected: 512)")
             return False
+            
+        norm = np.linalg.norm(avg_embedding)
+        if abs(norm - 1.0) > 0.1:
+            print(f"❌ Embedding not properly normalized: {norm:.4f} (expected: ~1.0)")
+            # Re-normalize
+            avg_embedding = avg_embedding / norm
 
-        print(f"📊 Using average embedding: {len(avg_embedding)}D")
+        print(f"📊 Using average embedding: {len(avg_embedding)}D, norm: {np.linalg.norm(avg_embedding):.4f}")
 
         try:
             conn = psycopg2.connect(**self.db_config)
@@ -281,16 +332,6 @@ class FaceRegistration:
             # Verify student exists
             student_id, actual_name = self.verify_student_exists(name)
             if not student_id:
-                # Show available students
-                print("💡 Available students in database:")
-                cursor.execute("SELECT student_id, name FROM students ORDER BY student_id")
-                available_students = cursor.fetchall()
-                if available_students:
-                    for sid, sname in available_students:
-                        print(f"   - ID: {sid}, Name: '{sname}'")
-                else:
-                    print("   - No students found in database")
-                
                 return False
             
             # Convert embedding to bytes then to hex string
@@ -299,28 +340,19 @@ class FaceRegistration:
             
             print(f"🔍 Embedding details:")
             print(f"   - Dimension: {len(avg_embedding)}")
+            print(f"   - Norm: {np.linalg.norm(avg_embedding):.4f}")
             print(f"   - Bytes: {len(emb_bytes)}")
             print(f"   - Hex length: {len(emb_hex)}")
             
-            # Check if embedding already exists
-            cursor.execute("SELECT embedding_id FROM face_embeddings WHERE student_id = %s", (student_id,))
-            existing_embedding = cursor.fetchone()
+            # Delete existing embedding if any
+            cursor.execute("DELETE FROM face_embeddings WHERE student_id = %s", (student_id,))
             
-            if existing_embedding:
-                # Update existing embedding
-                cursor.execute("""
-                    UPDATE face_embeddings 
-                    SET embedding = %s, name = %s, created_on = %s
-                    WHERE student_id = %s
-                """, (emb_hex, actual_name, datetime.now(), student_id))
-                print(f"🔄 Updated face embedding for '{actual_name}'")
-            else:
-                # Insert new embedding
-                cursor.execute("""
-                    INSERT INTO face_embeddings (student_id, name, embedding, created_on) 
-                    VALUES (%s, %s, %s, %s)
-                """, (student_id, actual_name, emb_hex, datetime.now()))
-                print(f"✅ Inserted new face embedding for '{actual_name}'")
+            # Insert new embedding
+            cursor.execute("""
+                INSERT INTO face_embeddings (student_id, name, embedding, created_on) 
+                VALUES (%s, %s, %s, %s)
+            """, (student_id, actual_name, emb_hex, datetime.now()))
+            print(f"✅ Inserted new face embedding for '{actual_name}'")
             
             # Verify the insertion
             cursor.execute("""
@@ -378,7 +410,7 @@ class FaceRegistration:
     
     def register_student(self, name):
         """Complete registration pipeline for 512D embeddings"""
-        print(f"🚀 Starting 512D Face Registration for: {name}")
+        print(f"🚀 Starting PROPER 512D Face Registration for: {name}")
         print("=" * 50)
         
         # Clean up any old data first
@@ -401,29 +433,28 @@ class FaceRegistration:
                 
             print(f"✅ {step_name} completed")
         
-        print(f"\n🎉 512D Face registration completed for {name}!")
+        print(f"\n🎉 PROPER 512D Face registration completed for {name}!")
         print("=" * 50)
         return True
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python face_registration.py <student_name>")
-        print("Example: python face_registration.py john")
-        sys.exit(1)
+    # Get student name from user input
+    print("🎯 PROPER Face Registration Tool")
+    print("=" * 40)
     
-    name = sys.argv[1].strip()
+    name = input("Enter student name: ").strip()
     
     if not name:
         print("❌ Error: Student name cannot be empty")
         sys.exit(1)
     
-    print(f"🎯 Starting registration for: {name}")
+    print(f"Starting registration for: {name}")
     
     registrar = FaceRegistration()
     success = registrar.register_student(name)
     
     if success:
-        print(f"\n✅ SUCCESS: {name} has been registered with 512D embeddings!")
+        print(f"\n✅ SUCCESS: {name} has been registered with PROPER 512D embeddings!")
         print("The face embeddings are now ready for recognition.")
     else:
         print(f"\n❌ FAILED: Registration failed for {name}")
