@@ -104,24 +104,24 @@
     </div>
 
     <!-- Register Student -->
-    <div class="mb-4">
-      <button id="openFormBtn" class="btn btn-primary">➕ Register Student</button>
-      <div id="studentFormContainer" style="display:none; margin-top:20px;">
-        <div class="card shadow p-3">
-          <h4>Student Registration</h4>
-          <form id="studentForm">
-            <input type="text" id="sname" placeholder="Name" class="form-control mb-2" required>
-            <input type="text" id="sroll" placeholder="Roll Number" class="form-control mb-2" required>
-            <input type="text" id="sclass" placeholder="Class" class="form-control mb-2" required>
-            <input type="email" id="semail" placeholder="Email" class="form-control mb-2" required>
-            <input type="text" id="sphone" placeholder="Phone" class="form-control mb-2" required>
-            <button type="submit" class="btn btn-success">Confirm Registration</button>
-            <button type="button" id="closeFormBtn" class="btn btn-secondary">Cancel</button>
-          </form>
-          <div id="studentMsg" class="mt-2"></div>
-        </div>
-      </div>
+<div class="mb-4">
+  <button id="openFormBtn" class="btn btn-primary">➕ Register Student</button>
+  <div id="studentFormContainer" style="display:none; margin-top:20px;">
+    <div class="card shadow p-3">
+      <h4>Student Registration</h4>
+      <form id="studentForm">
+        <input type="text" id="sname" placeholder="Name" class="form-control mb-2" required>
+        <input type="text" id="sroll" placeholder="Roll Number" class="form-control mb-2" required>
+        <input type="text" id="sclass" placeholder="Class" class="form-control mb-2" required>
+        <input type="email" id="semail" placeholder="Email" class="form-control mb-2" required>
+        <input type="text" id="sphone" placeholder="Phone" class="form-control mb-2" required>
+        <button type="submit" class="btn btn-success">Confirm Registration</button>
+        <button type="button" id="closeFormBtn" class="btn btn-secondary">Cancel</button>
+      </form>
+      <div id="studentMsg" class="mt-2"></div>
     </div>
+  </div>
+</div>
 
     <!-- Face Registration Instructions (shown after successful registration) -->
     <div id="faceRegistrationSection" style="display: none;" class="download-card">
@@ -256,78 +256,96 @@ function contactSupport() {
 }
   
     // ======================
-    // 🎯 Open/Close Student Form
-    // ======================
-    document.getElementById("openFormBtn").addEventListener("click", () => {
-      document.getElementById("studentFormContainer").style.display = "block";
+// 🎯 Open/Close Student Form
+// ======================
+document.getElementById("openFormBtn").addEventListener("click", () => {
+  document.getElementById("studentFormContainer").style.display = "block";
+});
+
+document.getElementById("closeFormBtn").addEventListener("click", () => {
+  document.getElementById("studentFormContainer").style.display = "none";
+});
+
+// ======================
+// 📌 Student Registration
+// ======================
+document.getElementById("studentForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  
+  const name = document.getElementById("sname").value.trim();
+  const roll = document.getElementById("sroll").value.trim();
+  const sclass = document.getElementById("sclass").value.trim();
+  const email = document.getElementById("semail").value.trim();
+  const phone = document.getElementById("sphone").value.trim();
+
+  // Show confirmation popup
+  const isConfirmed = confirm(`Are you sure you want to register this student?\n\nName: ${name}\nRoll Number: ${roll}\nClass: ${sclass}\nEmail: ${email}\nPhone: ${phone}`);
+  
+  if (!isConfirmed) {
+    return; // Stop if user cancels
+  }
+
+  try {
+    const res = await fetch("https://face-attendance-9vis.onrender.com/students", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json", 
+        "Authorization": "Bearer " + token 
+      },
+      body: JSON.stringify({ 
+        name, 
+        roll_number: roll, 
+        class_name: sclass, 
+        email, 
+        phone 
+      })
     });
     
-    document.getElementById("closeFormBtn").addEventListener("click", () => {
+    const data = await res.json();
+    
+    if (res.ok) {
+      // Show success message and face registration instructions
+      document.getElementById("studentMsg").innerHTML = `
+        <div class="alert alert-success">
+          ✅ Student registered successfully!<br>
+          <strong>Student ID:</strong> ${data.student_id}
+        </div>
+      `;
+      
+      // Show face registration section
+      document.getElementById("registeredName").textContent = name;
+      document.getElementById("faceRegistrationSection").style.display = "block";
+      
+      // Clear form and close
+      document.getElementById("studentForm").reset();
       document.getElementById("studentFormContainer").style.display = "none";
-    });
-
-    // ======================
-    // 📌 Student Registration
-    // ======================
-    document.getElementById("studentForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const name = document.getElementById("sname").value.trim();
-      const roll = document.getElementById("sroll").value.trim();
-      const sclass = document.getElementById("sclass").value.trim();
-      const email = document.getElementById("semail").value.trim();
-      const phone = document.getElementById("sphone").value.trim();
-
-      try {
-        const res = await fetch("https://face-attendance-9vis.onrender.com/students", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-          body: JSON.stringify({ name, roll_number: roll, class_name: sclass, email, phone })
-        });
-        
-        const data = await res.json();
-        
-        if (res.ok) {
-          // Show success message and face registration instructions
-          document.getElementById("studentMsg").innerHTML = `
-            <div class="alert alert-success">
-              ✅ Student registered successfully!<br>
-              <strong>Student ID:</strong> ${data.student_id}
-            </div>
-          `;
-          
-          // Show face registration section
-          document.getElementById("registeredName").textContent = name;
-          document.getElementById("faceRegistrationSection").style.display = "block";
-          
-          // Clear form and close
-          document.getElementById("studentForm").reset();
-          document.getElementById("studentFormContainer").style.display = "none";
-        } else {
-          document.getElementById("studentMsg").innerHTML = `
-            <div class="alert alert-danger">
-              ❌ Error: ${data.error || data.message}
-            </div>
-          `;
-        }
-      } catch (err) {
-        document.getElementById("studentMsg").innerHTML = `
-          <div class="alert alert-danger">
-            ❌ Request failed: ${err.message}
-          </div>
-        `;
-      }
-    });
-
-    // ======================
-    // 📌 Section Navigation
-    // ======================
-    function showSection(sectionId) {
-      document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
-      document.getElementById(sectionId).style.display = "block";
-
-      if (sectionId === "attendance") fetchMyAttendance();
-      if (sectionId === "timetable") fetchTimetable();
+    } else {
+      document.getElementById("studentMsg").innerHTML = `
+        <div class="alert alert-danger">
+          ❌ Error: ${data.error || data.message}
+        </div>
+      `;
     }
+  } catch (err) {
+    document.getElementById("studentMsg").innerHTML = `
+      <div class="alert alert-danger">
+        ❌ Request failed: ${err.message}
+      </div>
+    `;
+  }
+});
+
+// ======================
+// 📌 Section Navigation
+// ======================
+function showSection(sectionId) {
+  document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+  document.getElementById(sectionId).style.display = "block";
+
+  if (sectionId === "attendance") fetchMyAttendance();
+  if (sectionId === "timetable") fetchTimetable();
+}
+
 
     // ======================
     // 📌 Fetch Attendance
