@@ -9,7 +9,7 @@ async function sendMail(to, subject, text, html) {
       const resend = new Resend(process.env.RESEND_API_KEY);
       
       const { data, error } = await resend.emails.send({
-        from: process.env.MAIL_FROM || 'Attendance System <adscem2025@gmail.com>',
+        from: process.env.MAIL_FROM || 'Attendance System <onboarding@resend.dev>',
         to: to,
         subject: subject,
         text: text,
