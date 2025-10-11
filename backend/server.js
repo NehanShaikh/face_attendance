@@ -185,6 +185,46 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.get("/debug-sendgrid", async (req, res) => {
+  try {
+    console.log("🧪 Testing SendGrid configuration...");
+    
+    const config = {
+      SENDGRID_API_KEY: process.env.SENDGRID_API_KEY ? "***" + process.env.SENDGRID_API_KEY.slice(-4) : "Missing",
+      NODE_ENV: process.env.NODE_ENV,
+      has_sg_key: !!process.env.SENDGRID_API_KEY
+    };
+    
+    // Test SendGrid directly
+    if (process.env.SENDGRID_API_KEY) {
+      const sgMail = (await import('@sendgrid/mail')).default;
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      
+      const testMsg = {
+        to: 'nehanshaikh07@gmail.com',
+        from: 'adscem2025@gmail.com',
+        subject: 'SendGrid Debug Test',
+        text: 'Testing SendGrid configuration',
+      };
+      
+      try {
+        const result = await sgMail.send(testMsg);
+        config.sendgrid_test = "SUCCESS";
+        config.response = result[0]?.statusCode;
+      } catch (error) {
+        config.sendgrid_test = "FAILED";
+        config.error = error.message;
+        config.details = error.response?.body;
+      }
+    }
+    
+    console.log("🔧 SendGrid Debug:", config);
+    res.json(config);
+    
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Add this route - around line 40 after your middleware
 app.get("/health", async (req, res) => {
