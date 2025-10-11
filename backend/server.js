@@ -210,6 +210,53 @@ app.get("/health", async (req, res) => {
 
 // Student marks their attendance (with subject check)
 
+// Add this route to your server.js file
+app.get("/debug-email", async (req, res) => {
+  try {
+    console.log("🔧 Debugging email configuration...");
+    
+    // Check if packages are available
+    let sendgridAvailable = false;
+    let resendAvailable = false;
+    let sendgridError = "";
+    let resendError = "";
+    
+    try {
+      await import('@sendgrid/mail');
+      sendgridAvailable = true;
+    } catch (e) {
+      sendgridAvailable = false;
+      sendgridError = e.message;
+    }
+    
+    try {
+      await import('resend');
+      resendAvailable = true;
+    } catch (e) {
+      resendAvailable = false;
+      resendError = e.message;
+    }
+    
+    const config = {
+      SENDGRID_API_KEY: process.env.SENDGRID_API_KEY ? "***" + process.env.SENDGRID_API_KEY.slice(-4) : "Not set",
+      RESEND_API_KEY: process.env.RESEND_API_KEY ? "***" + process.env.RESEND_API_KEY.slice(-4) : "Not set",
+      MAIL_FROM: process.env.MAIL_FROM,
+      packages: {
+        sendgrid: { available: sendgridAvailable, error: sendgridError },
+        resend: { available: resendAvailable, error: resendError }
+      },
+      current_time: new Date().toISOString()
+    };
+    
+    console.log("📧 Email debug config:", config);
+    
+    res.json(config);
+    
+  } catch (error) {
+    console.error("Debug error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // ---------------- MARK ATTENDANCE ----------------
 app.post("/attendance", async (req, res) => {
