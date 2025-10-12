@@ -24,32 +24,37 @@
     .table-container {
       overflow-x: auto;
       max-width: 100%;
+      border-radius: 8px;
     }
     .table {
-      min-width: 600px; /* Minimum width for tables */
+      min-width: 800px; /* Minimum width for all columns */
       width: 100%;
-      table-layout: fixed; /* Prevents column overflow */
+      margin-bottom: 0;
     }
     .table th {
       text-align: center;
       background: #4e73df;
       color: #fff;
       font-weight: 500;
+      white-space: nowrap;
+      padding: 12px 8px;
     }
     .table td {
       text-align: center;
       vertical-align: middle;
-      word-wrap: break-word; /* Prevents text overflow */
+      padding: 10px 8px;
+      word-wrap: break-word;
     }
     tr:hover td {
       background: #eef3ff;
     }
     
-    /* Fixed column widths for timetable */
-    .table th:nth-child(1), .table td:nth-child(1) { width: 20%; } /* Day */
-    .table th:nth-child(2), .table td:nth-child(2) { width: 40%; } /* Subject */
-    .table th:nth-child(3), .table td:nth-child(3) { width: 20%; } /* Start */
-    .table th:nth-child(4), .table td:nth-child(4) { width: 20%; } /* End */
+    /* Fixed column widths */
+    .table th:nth-child(1), .table td:nth-child(1) { width: 15%; } /* Attendance ID */
+    .table th:nth-child(2), .table td:nth-child(2) { width: 15%; } /* Student ID */
+    .table th:nth-child(3), .table td:nth-child(3) { width: 20%; } /* Name */
+    .table th:nth-child(4), .table td:nth-child(4) { width: 25%; } /* Subject */
+    .table th:nth-child(5), .table td:nth-child(5) { width: 25%; } /* Timestamp */
 
     .download-card {
       background: #e7f3ff;
@@ -171,41 +176,36 @@
     </div>
 
     <!-- Attendance Table -->
+    <!-- FIXED ATTENDANCE SECTION -->
     <div id="attendance" class="section card shadow p-3 mb-4">
       <h4 class="mb-3">✅ My Attendance</h4>
-      <table class="table table-bordered">
-        <thead class="table-dark">
-          <tr>
-            <th>Attendance ID</th>
-            <th>Student ID</th>
-            <th>Name</th>
-            <th>Subject</th>
-            <th>Timestamp</th>
-          </tr>
-        </thead>
-        <tbody id="attendanceTable"></tbody>
-      </table>
-    </div>
-
-    <!-- Timetable Table - FIXED -->
-    <div id="timetable" class="section card shadow p-3 mb-4">
-      <h4 class="mb-3">📅 My Timetable</h4>
-      <div class="table-container"> <!-- Added wrapper for horizontal scroll -->
-        <table class="table table-striped">
-          <thead class="table-primary">
+      <div class="table-container"> <!-- Added container for horizontal scroll -->
+        <table class="table table-bordered">
+          <thead class="table-dark">
             <tr>
-              <th>Day</th>
+              <th>Attendance ID</th>
+              <th>Student ID</th>
+              <th>Name</th>
               <th>Subject</th>
-              <th>Start</th>
-              <th>End</th>
+              <th>Timestamp</th>
             </tr>
           </thead>
-          <tbody id="timetableTable"></tbody>
+          <tbody id="attendanceTable"></tbody>
         </table>
       </div>
     </div>
   </div>
-</body>
+  
+    <!-- Timetable Table -->
+    <div id="timetable" class="section card shadow p-3 mb-4">
+      <h4 class="mb-3">📅 My Timetable</h4>
+      <table class="table table-striped">
+        <thead class="table-primary">
+          <tr><th>Day</th><th>Subject</th><th>Start</th><th>End</th></tr>
+        </thead>
+        <tbody id="timetableTable"></tbody>
+      </table>
+    </div>
 
     <!-- Face Recognition Tools Section -->
     <div id="faceTools" class="section card shadow p-3 mb-4">
