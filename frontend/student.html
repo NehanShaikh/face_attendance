@@ -19,6 +19,17 @@
     .section {
       display: none;
     }
+    
+    /* FIXED TABLE STYLES */
+    .table-container {
+      overflow-x: auto;
+      max-width: 100%;
+    }
+    .table {
+      min-width: 600px; /* Minimum width for tables */
+      width: 100%;
+      table-layout: fixed; /* Prevents column overflow */
+    }
     .table th {
       text-align: center;
       background: #4e73df;
@@ -28,10 +39,18 @@
     .table td {
       text-align: center;
       vertical-align: middle;
+      word-wrap: break-word; /* Prevents text overflow */
     }
     tr:hover td {
       background: #eef3ff;
     }
+    
+    /* Fixed column widths for timetable */
+    .table th:nth-child(1), .table td:nth-child(1) { width: 20%; } /* Day */
+    .table th:nth-child(2), .table td:nth-child(2) { width: 40%; } /* Subject */
+    .table th:nth-child(3), .table td:nth-child(3) { width: 20%; } /* Start */
+    .table th:nth-child(4), .table td:nth-child(4) { width: 20%; } /* End */
+
     .download-card {
       background: #e7f3ff;
       padding: 20px;
@@ -168,16 +187,25 @@
       </table>
     </div>
 
-    <!-- Timetable Table -->
+    <!-- Timetable Table - FIXED -->
     <div id="timetable" class="section card shadow p-3 mb-4">
       <h4 class="mb-3">📅 My Timetable</h4>
-      <table class="table table-striped">
-        <thead class="table-primary">
-          <tr><th>Day</th><th>Subject</th><th>Start</th><th>End</th></tr>
-        </thead>
-        <tbody id="timetableTable"></tbody>
-      </table>
+      <div class="table-container"> <!-- Added wrapper for horizontal scroll -->
+        <table class="table table-striped">
+          <thead class="table-primary">
+            <tr>
+              <th>Day</th>
+              <th>Subject</th>
+              <th>Start</th>
+              <th>End</th>
+            </tr>
+          </thead>
+          <tbody id="timetableTable"></tbody>
+        </table>
+      </div>
     </div>
+  </div>
+</body>
 
     <!-- Face Recognition Tools Section -->
     <div id="faceTools" class="section card shadow p-3 mb-4">
