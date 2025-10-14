@@ -261,11 +261,18 @@
   </div>
 
   <script>
+
+    // ======================
+  // 🔐 Authentication Check
+  // ======================
+  document.addEventListener("DOMContentLoaded", function() {
     const token = localStorage.getItem("token");
     if (!token) {
-      window.location.href = "student.html";
+      alert("Please log in first.");
+      window.location.href = "pipeline.html"; // Redirect to login page
+      return;
     }
-
+    
     // ======================
     // 🎯 Download Functions
     // ======================
@@ -289,15 +296,6 @@ function downloadSupportGuide() {
 
 function contactSupport() {
     window.location.href = 'mailto:adscem2025@gmail.com?subject=Support Request - Face Recognition Attendance System&body=Hello Support Team,%0D%0A%0D%0AI need assistance with the Face Recognition Attendance System.%0D%0A%0D%0AIssue Description:%0D%0A%0D%0AThank you.';
-}
-
-// ======================
-// 🔐 Authentication & Initialization
-// ======================
-const token = localStorage.getItem("token");
-if (!token) {
-    alert("Please login first");
-    location.href = "student.html";
 }
 
     // ======================
