@@ -261,16 +261,9 @@
   </div>
 
   <script>
-const token = localStorage.getItem("token");
-    // ======================
-  // 🔐 Authentication Check
-  // ======================
-  document.addEventListener("DOMContentLoaded", function() {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Please log in first.");
-      window.location.href = "pipeline.html"; // Redirect to login page
-      return;
+    window.location.href = "student.html";
     }
     
     // ======================
