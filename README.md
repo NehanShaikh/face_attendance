@@ -1,5 +1,5 @@
 ````markdown
-# 🎓 AI-Powered Smart Attendance System Using Face Recognition
+# 🎓 AI-Powered Smart Attendance System Using CCTV Camera
 
 An intelligent **face recognition–based attendance system** developed using **AI, Computer Vision, and Web Technologies**.  
 This project automates attendance marking using real-time face detection and recognition, storing data securely in a **PostgreSQL** database.
