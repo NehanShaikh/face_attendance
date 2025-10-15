@@ -171,5 +171,3 @@ You are free to use, modify, and distribute this for educational purposes.
 
 If you like this project, please ⭐ star the repo on GitHub
 Your feedback and contributions are welcome!
-Would you like me to include your **Render backend link** (once you share it) and your actual **GitHub repo name** so I can give you a finalized README version ready to upload?
-```
