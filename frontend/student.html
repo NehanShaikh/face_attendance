@@ -261,10 +261,11 @@
   </div>
 
   <script>
-    const token = localStorage.getItem("token");
-    if (!token) {
-    window.location.href = "student.html";
-    }
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Please login first");
+    location.href = "pipeline.html";
+  }
     
     // ======================
     // 🎯 Download Functions
