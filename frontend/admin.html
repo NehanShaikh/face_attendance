@@ -241,16 +241,12 @@
 
   <script>
     const token = localStorage.getItem("token");
-    if (!token) {
-    alert("Please login first");
-    location.href = "pipeline.html";
-    }
     const role = localStorage.getItem("role");
     const username = localStorage.getItem("username");
 
     if (!token || role !== "admin") {
       alert("❌ Unauthorized access. Login as admin.");
-      window.location.href = "login.html";
+      window.location.href = "pipeline.html";
     } else {
       document.getElementById("adminName").innerText = username;
     }
