@@ -8,11 +8,11 @@ from datetime import datetime
 class FaceRegistration:
     def __init__(self):
         self.db_config = {
-            "host": "dpg-d3h73lhr0fns73c5cesg-a.oregon-postgres.render.com",
+            "host": "dpg-d4av8kpr0fns73ejc0n0-a.oregon-postgres.render.com",
             "port": 5432,
-            "database": "face_db_fym1",
-            "user": "face_db_fym1_user",
-            "password": "XyD8oZRvbMjx6o5XKmJoFYKjaPWz2uOV"
+            "database": "face_db1",
+            "user": "face_db1_user",
+            "password": "flUf9eA73uCXP4NioVyYcwKh0E8bFkNN"
         }
         
     def capture_images(self, name):
